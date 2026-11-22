@@ -1,0 +1,24 @@
+➜  Local:   http://127.0.0.1:4173/
+recorded 5s
+recorded 10s
+recorded 15s
+recorded 20s
+recorded 25s
+recorded 30s
+{
+  "ok": true,
+  "file": "docs/screens/reveal-mobile.webm",
+  "mimeType": "video/webm;codecs=vp9",
+  "bytes": 261335,
+  "elapsedSeconds": 36,
+  "video": {
+    "bytes": 261335,
+    "timecodeScale": 1000000,
+    "clusters": 2,
+    "frames": 33,
+    "lastTimestampMs": 30147,
+    "durationKnown": false,
+    "durationMs": 30147
+  },
+  "finalMobile": "*******1234"
+}

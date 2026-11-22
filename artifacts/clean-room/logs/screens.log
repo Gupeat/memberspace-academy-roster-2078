@@ -1,0 +1,16 @@
+➜  Local:   http://127.0.0.1:4173/
+{
+  "ok": true,
+  "mode": "real-time",
+  "checks": [
+    "AC1 六卡与 128 行一致",
+    "AC2 查看后显示完整手机号",
+    "AC2 查看手机号（点击后完整号码；30 秒恢复由 --fast 与 capture 验证）",
+    "AC3 空说明被拒绝且 mock 请求数为 0",
+    "有效补录请求数为 1"
+  ],
+  "screenshots": [
+    "docs/screens/roster-stats.png",
+    "docs/screens/batch-attendance.png"
+  ]
+}

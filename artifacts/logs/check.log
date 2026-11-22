@@ -1,0 +1,26 @@
+指标 | 公式 | 重算 | 期望 | 结果
+---|---|---|---|---
+报名数 | rows.length | 128 | 128 | PASS
+候补数 | status=waitlist | 12 | 12 | PASS
+待审核数 | status=pending | 7 | 7 | PASS
+签到数 | checked_in_at != null | 96 | 96 | PASS
+出勤率 | checkedIn / registered | 75.0% | 75.0% | PASS
+非会员数 | is_member=false | 23 | 23 | PASS
+
+分项闭合：签到 96 + 已通过未签到 13 + 候补 12 + 待审核 7 = 128
+r020 脱敏：*******1234
+
+{
+  "ok": true,
+  "stats": {
+    "registered": 128,
+    "waitlist": 12,
+    "pending": 7,
+    "checkedIn": 96,
+    "attendanceRate": "75.0",
+    "nonMember": 23
+  },
+  "confirmed": 109,
+  "confirmedNotChecked": 13,
+  "revealRow": "r020"
+}

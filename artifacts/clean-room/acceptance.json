@@ -1,0 +1,150 @@
+{
+  "generatedAt": "2026-11-22T08:37:11Z",
+  "passed": true,
+  "evidenceDir": "artifacts/clean-room",
+  "node": "v24.21.0",
+  "platform": "win32 x64",
+  "steps": [
+    {
+      "id": "check",
+      "title": "独立对账 mock 数据（六卡六值 + 分项闭合）",
+      "command": [
+        "node",
+        "scripts/check-roster.mjs"
+      ],
+      "ok": true,
+      "exitCode": 0,
+      "elapsed": "0.15",
+      "log": "artifacts/clean-room/logs/check.log",
+      "outputTail": "指标 | 公式 | 重算 | 期望 | 结果\n---|---|---|---|---\n报名数 | rows.length | 128 | 128 | PASS\n候补数 | status=waitlist | 12 | 12 | PASS\n待审核数 | status=pending | 7 | 7 | PASS\n签到数 | checked_in_at != null | 96 | 96 | PASS\n出勤率 | checkedIn / registered | 75.0% | 75.0% | PASS\n非会员数 | is_member=false | 23 | 23 | PASS\n分项闭合：签到 96 + 已通过未签到 13 + 候补 12 + 待审核 7 = 128\nr020 脱敏：*******1234\n{\n  \"ok\": true,\n  \"stats\": {\n    \"registered\": 128,\n    \"waitlist\": 12,\n    \"pending\": 7,\n    \"checkedIn\": 96,\n    \"attendanceRate\": \"75.0\",\n    \"nonMember\": 23\n  },\n  \"confirmed\": 109,\n  \"confirmedNotChecked\": 13,\n  \"revealRow\": \"r020\"\n}"
+    },
+    {
+      "id": "build",
+      "title": "生产构建",
+      "command": [
+        "node",
+        "scripts/build.mjs"
+      ],
+      "ok": true,
+      "exitCode": 0,
+      "elapsed": "66.18",
+      "log": "artifacts/clean-room/logs/build.log",
+      "outputTail": "vite v5.4.11 building for production...\ntransforming...\n✓ 3907 modules transformed.\nrendering chunks...\ncomputing gzip size...\ndist/index.html                   0.68 kB │ gzip:   0.51 kB\ndist/assets/index-BugbCbPV.css  100.01 kB │ gzip:  11.88 kB\ndist/assets/index-DO65ONcO.js   354.96 kB │ gzip: 109.78 kB\n✓ built in 58.01s"
+    },
+    {
+      "id": "typecheck",
+      "title": "TypeScript 类型检查",
+      "command": [
+        "node",
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ],
+      "ok": true,
+      "exitCode": 0,
+      "elapsed": "6.24",
+      "log": "artifacts/clean-room/logs/typecheck.log",
+      "outputTail": ""
+    },
+    {
+      "id": "unit",
+      "title": "领域逻辑单测",
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run"
+      ],
+      "ok": true,
+      "exitCode": 0,
+      "elapsed": "2.73",
+      "log": "artifacts/clean-room/logs/unit.log",
+      "outputTail": "RUN  v2.1.8 <repo>\n ✓ src/domain/permissions.test.ts (3 tests) 6ms\n ✓ src/domain/stats.test.ts (11 tests) 15ms\n Test Files  2 passed (2)\n      Tests  14 passed (14)\n   Start at  16:36:11\n   Duration  1.53s (transform 171ms, setup 0ms, collect 250ms, tests 21ms, environment 1ms, prepare 467ms)"
+    },
+    {
+      "id": "e2e-fast",
+      "title": "AC 回归（假时钟验证 30 秒恢复脱敏）",
+      "command": [
+        "node",
+        "scripts/e2e.mjs",
+        "--fast"
+      ],
+      "ok": true,
+      "exitCode": 0,
+      "elapsed": "6.64",
+      "log": "artifacts/clean-room/logs/e2e-fast.log",
+      "outputTail": "➜  Local:   http://127.0.0.1:4173/\n{\n  \"ok\": true,\n  \"mode\": \"fast-clock\",\n  \"checks\": [\n    \"AC1 六卡与 128 行一致\",\n    \"AC2 查看后显示完整手机号\",\n    \"AC2 30 秒窗口到期后恢复脱敏（假时钟）\",\n    \"AC3 空说明被拒绝且 mock 请求数为 0\",\n    \"有效补录请求数为 1\"\n  ],\n  \"screenshots\": []\n}"
+    },
+    {
+      "id": "screens",
+      "title": "AC 截图（六卡 / 手机号查看 / 批量补录空说明）",
+      "command": [
+        "node",
+        "scripts/e2e.mjs",
+        "--capture"
+      ],
+      "ok": true,
+      "exitCode": 0,
+      "elapsed": "10.88",
+      "log": "artifacts/clean-room/logs/screens.log",
+      "outputTail": "➜  Local:   http://127.0.0.1:4173/\n{\n  \"ok\": true,\n  \"mode\": \"real-time\",\n  \"checks\": [\n    \"AC1 六卡与 128 行一致\",\n    \"AC2 查看后显示完整手机号\",\n    \"AC2 查看手机号（点击后完整号码；30 秒恢复由 --fast 与 capture 验证）\",\n    \"AC3 空说明被拒绝且 mock 请求数为 0\",\n    \"有效补录请求数为 1\"\n  ],\n  \"screenshots\": [\n    \"docs/screens/roster-stats.png\",\n    \"docs/screens/batch-attendance.png\"\n  ]\n}"
+    },
+    {
+      "id": "video",
+      "title": "AC2 真实 30 秒录屏",
+      "command": [
+        "node",
+        "scripts/capture-reveal.mjs"
+      ],
+      "ok": true,
+      "exitCode": 0,
+      "elapsed": "41.54",
+      "log": "artifacts/clean-room/logs/video.log",
+      "outputTail": "➜  Local:   http://127.0.0.1:4173/\nrecorded 5s\nrecorded 10s\nrecorded 15s\nrecorded 20s\nrecorded 25s\nrecorded 30s\n{\n  \"ok\": true,\n  \"file\": \"artifacts/clean-room/docs/screens/reveal-mobile.webm\",\n  \"mimeType\": \"video/webm;codecs=vp9\",\n  \"bytes\": 261509,\n  \"elapsedSeconds\": 36,\n  \"video\": {\n    \"bytes\": 261509,\n    \"timecodeScale\": 1000000,\n    \"clusters\": 2,\n    \"frames\": 33,\n    \"lastTimestampMs\": 30216,\n    \"durationKnown\": false,\n    \"durationMs\": 30216\n  },\n  \"finalMobile\": \"*******1234\"\n}"
+    }
+  ],
+  "evidence": [
+    {
+      "path": "artifacts/clean-room/docs/screens/roster-stats.png",
+      "bytes": 968096,
+      "sha256": "a9ecc2e9abe735b46bd0dabe017913bbb9a8f015df18d2f54a5303b43c6e32c8"
+    },
+    {
+      "path": "artifacts/clean-room/docs/screens/reveal-mobile-before.png",
+      "bytes": 172437,
+      "sha256": "d0f247967b8d68f833537a1e33930c8d27eb0d5f750b093af4bf593ebb82f11a"
+    },
+    {
+      "path": "artifacts/clean-room/docs/screens/reveal-mobile-poster.png",
+      "bytes": 115429,
+      "sha256": "f1e9bac9ead68fcd9e4815b9d3c626765535fc82a4aa534e8b77c4e5f6ad9adb"
+    },
+    {
+      "path": "artifacts/clean-room/docs/screens/reveal-mobile-after.png",
+      "bytes": 115541,
+      "sha256": "d769cef088e8db4fbc32949b8ed33078ac41d41e1da8d990e578bb66cbce2354"
+    },
+    {
+      "path": "artifacts/clean-room/docs/screens/reveal-mobile.webm",
+      "bytes": 261509,
+      "sha256": "9ffe10b3539cb567f0ad0048c1dcf0c84a804a7eb6ba012e1937160f550030e5"
+    },
+    {
+      "path": "artifacts/clean-room/docs/screens/batch-attendance.png",
+      "bytes": 168637,
+      "sha256": "3f53c765aaf25dd15d45b524d3383d18fb911731c2640ee49ef32afd28c208cc"
+    },
+    {
+      "path": "artifacts/clean-room/docs/screens/batch-attendance-success.png",
+      "bytes": 200229,
+      "sha256": "74f89f840a70cc9130613af2aa605a1835e6a6d1efdee63dba72d98cc900543b"
+    }
+  ],
+  "video": {
+    "bytes": 261509,
+    "timecodeScale": 1000000,
+    "clusters": 2,
+    "frames": 33,
+    "lastTimestampMs": 30216,
+    "durationKnown": false,
+    "durationMs": 30216
+  }
+}
