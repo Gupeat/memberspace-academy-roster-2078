@@ -126,7 +126,7 @@ async function main() {
     if (header !== "1a45dfa3") throw new Error("输出不是 WebM 文件：" + header);
     const probe = probeWebm(video);
     if (probe.frames < 1) throw new Error("录屏没有视频帧：" + JSON.stringify(probe));
-    if (probe.lastTimestampMs < 30000) throw new Error("录屏未覆盖 30 秒窗口：" + JSON.stringify(probe));
+    if (probe.durationMs < 30000) throw new Error("录屏未覆盖 30 秒窗口：" + JSON.stringify(probe));
     console.log(JSON.stringify({
       ok: true,
       file: displayPath(OUT),

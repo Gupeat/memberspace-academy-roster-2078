@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-23T22:13:55Z",
+  "generatedAt": "2026-11-23T23:01:52Z",
   "passed": true,
   "evidenceDir": ".",
   "node": "v24.21.0",
@@ -27,9 +27,9 @@
       ],
       "ok": true,
       "exitCode": 0,
-      "elapsed": "47.72",
+      "elapsed": "46.02",
       "log": "artifacts/logs/build.log",
-      "outputTail": "vite v5.4.11 building for production...\ntransforming...\n✓ 3907 modules transformed.\nrendering chunks...\ncomputing gzip size...\ndist/index.html                   0.68 kB │ gzip:   0.51 kB\ndist/assets/index-BugbCbPV.css  100.01 kB │ gzip:  11.88 kB\ndist/assets/index-CaBAABXh.js   355.17 kB │ gzip: 109.89 kB\n✓ built in 41.52s"
+      "outputTail": "vite v5.4.11 building for production...\ntransforming...\n✓ 3907 modules transformed.\nrendering chunks...\ncomputing gzip size...\ndist/index.html                   0.68 kB │ gzip:   0.51 kB\ndist/assets/index-BugbCbPV.css  100.01 kB │ gzip:  11.88 kB\ndist/assets/index-_t2zIgVv.js   355.74 kB │ gzip: 110.06 kB\n✓ built in 39.49s"
     },
     {
       "id": "typecheck",
@@ -41,7 +41,7 @@
       ],
       "ok": true,
       "exitCode": 0,
-      "elapsed": "5.32",
+      "elapsed": "5.47",
       "log": "artifacts/logs/typecheck.log",
       "outputTail": ""
     },
@@ -57,7 +57,7 @@
       "exitCode": 0,
       "elapsed": "2.72",
       "log": "artifacts/logs/unit.log",
-      "outputTail": "RUN  v2.1.8 <repo>\n ✓ src/domain/permissions.test.ts (4 tests) 6ms\n ✓ src/domain/stats.test.ts (11 tests) 15ms\n Test Files  2 passed (2)\n      Tests  15 passed (15)\n   Start at  06:12:55\n   Duration  1.50s (transform 164ms, setup 0ms, collect 274ms, tests 21ms, environment 1ms, prepare 477ms)"
+      "outputTail": "RUN  v2.1.8 <repo>\n ✓ src/domain/permissions.test.ts (5 tests) 6ms\n ✓ src/domain/stats.test.ts (11 tests) 18ms\n Test Files  2 passed (2)\n      Tests  16 passed (16)\n   Start at  07:00:50\n   Duration  1.52s (transform 177ms, setup 0ms, collect 248ms, tests 24ms, environment 1ms, prepare 505ms)"
     },
     {
       "id": "e2e-fast",
@@ -69,9 +69,9 @@
       ],
       "ok": true,
       "exitCode": 0,
-      "elapsed": "6.68",
+      "elapsed": "7.25",
       "log": "artifacts/logs/e2e-fast.log",
-      "outputTail": "➜  Local:   http://127.0.0.1:4173/\n{\n  \"ok\": true,\n  \"mode\": \"fast-clock\",\n  \"checks\": [\n    \"AC1 六卡与 128 行一致\",\n    \"AC2 只读审计员不渲染查看按钮且手机号保持脱敏\",\n    \"AC2 查看后显示完整手机号\",\n    \"AC2 30 秒窗口到期后恢复脱敏（假时钟）\",\n    \"AC3 空说明被拒绝且 mock 请求数为 0\",\n    \"有效补录请求数为 1\"\n  ],\n  \"screenshots\": []\n}"
+      "outputTail": "➜  Local:   http://127.0.0.1:4173/\n{\n  \"ok\": true,\n  \"mode\": \"fast-clock\",\n  \"checks\": [\n    \"AC1 六卡与 128 行一致\",\n    \"AC2 只读审计员不渲染查看按钮、不可勾选/批量补录、切换后更正抽屉关闭且手机号保持脱敏\",\n    \"AC2 查看后显示完整手机号\",\n    \"AC2 30 秒窗口到期后恢复脱敏（假时钟）\",\n    \"AC3 空说明被拒绝且 mock 请求数为 0\",\n    \"有效补录请求数为 1\"\n  ],\n  \"screenshots\": []\n}"
     },
     {
       "id": "screens",
@@ -83,9 +83,9 @@
       ],
       "ok": true,
       "exitCode": 0,
-      "elapsed": "11.49",
+      "elapsed": "12.36",
       "log": "artifacts/logs/screens.log",
-      "outputTail": "➜  Local:   http://127.0.0.1:4173/\n{\n  \"ok\": true,\n  \"mode\": \"real-time\",\n  \"checks\": [\n    \"AC1 六卡与 128 行一致\",\n    \"AC2 只读审计员不渲染查看按钮且手机号保持脱敏\",\n    \"AC2 查看后显示完整手机号\",\n    \"AC2 查看手机号（点击后完整号码；30 秒恢复由 --fast 与 capture 验证）\",\n    \"AC3 空说明被拒绝且 mock 请求数为 0\",\n    \"有效补录请求数为 1\"\n  ],\n  \"screenshots\": [\n    \"docs/screens/roster-stats.png\",\n    \"docs/screens/mobile-no-permission.png\",\n    \"docs/screens/batch-attendance.png\"\n  ]\n}"
+      "outputTail": "➜  Local:   http://127.0.0.1:4173/\n{\n  \"ok\": true,\n  \"mode\": \"real-time\",\n  \"checks\": [\n    \"AC1 六卡与 128 行一致\",\n    \"AC2 只读审计员不渲染查看按钮、不可勾选/批量补录、切换后更正抽屉关闭且手机号保持脱敏\",\n    \"AC2 查看后显示完整手机号\",\n    \"AC2 查看手机号（点击后完整号码；30 秒恢复由 --fast 与 capture 验证）\",\n    \"AC3 空说明被拒绝且 mock 请求数为 0\",\n    \"有效补录请求数为 1\"\n  ],\n  \"screenshots\": [\n    \"docs/screens/roster-stats.png\",\n    \"docs/screens/mobile-no-permission.png\",\n    \"docs/screens/batch-attendance.png\"\n  ]\n}"
     },
     {
       "id": "video",
@@ -96,26 +96,26 @@
       ],
       "ok": true,
       "exitCode": 0,
-      "elapsed": "40.28",
+      "elapsed": "40.59",
       "log": "artifacts/logs/video.log",
-      "outputTail": "➜  Local:   http://127.0.0.1:4173/\nrecorded 5s\nrecorded 10s\nrecorded 15s\nrecorded 20s\nrecorded 25s\nrecorded 30s\n{\n  \"ok\": true,\n  \"file\": \"docs/screens/reveal-mobile.webm\",\n  \"mimeType\": \"video/webm;codecs=vp9\",\n  \"bytes\": 261349,\n  \"elapsedSeconds\": 35,\n  \"video\": {\n    \"bytes\": 261349,\n    \"timecodeScale\": 1000000,\n    \"clusters\": 2,\n    \"frames\": 33,\n    \"lastTimestampMs\": 30394,\n    \"durationKnown\": false,\n    \"durationMs\": 30394\n  },\n  \"finalMobile\": \"*******1234\"\n}"
+      "outputTail": "recorded 10s\nrecorded 15s\nrecorded 20s\nrecorded 25s\nrecorded 30s\n{\n  \"ok\": true,\n  \"file\": \"docs/screens/reveal-mobile.webm\",\n  \"mimeType\": \"video/webm;codecs=vp9\",\n  \"bytes\": 261323,\n  \"elapsedSeconds\": 36,\n  \"video\": {\n    \"bytes\": 261323,\n    \"timecodeScale\": 1000000,\n    \"clusters\": 2,\n    \"frames\": 33,\n    \"lastClusterTimestampMs\": 30696,\n    \"lastFrameStartMs\": 36157,\n    \"frameDeltaMs\": 1098,\n    \"durationMs\": 36157,\n    \"durationKnown\": false\n  },\n  \"finalMobile\": \"*******1234\"\n}"
     }
   ],
   "evidence": [
     {
       "path": "docs/screens/roster-stats.png",
-      "bytes": 968094,
-      "sha256": "b4b109b455f5ceeab67c8e06bf07cc5a5809e4dfa78f4d197f198c2b0767cb84"
+      "bytes": 968321,
+      "sha256": "468dd1e40abeeed3767ba6ed346db5367388d3ceb1a024a4f1467afe30d96e6a"
     },
     {
       "path": "docs/screens/mobile-no-permission.png",
-      "bytes": 918900,
-      "sha256": "a876593b3df293723482bd6394b0d8d5115f3602b3f7d17ee7ca411b95843885"
+      "bytes": 921830,
+      "sha256": "0521dbeeadb206c45909f5a454590141d194020eefef8610d54b0ffb14145f2c"
     },
     {
       "path": "docs/screens/reveal-mobile-before.png",
-      "bytes": 172223,
-      "sha256": "ab0bd10ba42d70e72fc9cbc62b962d1665cd3a6c7e276febd5856f1e9143695e"
+      "bytes": 171417,
+      "sha256": "b7e9d49eec36ea721d08ac78d33b28ff6e6b85f18f86a6dc498ae995472df21e"
     },
     {
       "path": "docs/screens/reveal-mobile-poster.png",
@@ -129,27 +129,29 @@
     },
     {
       "path": "docs/screens/reveal-mobile.webm",
-      "bytes": 261349,
-      "sha256": "6237fbc1d590f22f24aa04abeff4ce907fe203b7d54d9b14cfa4f8aeac9c000b"
+      "bytes": 261323,
+      "sha256": "4bad975ec81c387780a749ba3b61bd163b8b513d509dc17a4b48ddd963196090"
     },
     {
       "path": "docs/screens/batch-attendance.png",
-      "bytes": 168672,
-      "sha256": "1096b3aa055366602f1e394402e8651c305888d03693c5ab035036731cd165c8"
+      "bytes": 168673,
+      "sha256": "d0c2d2d17e2386a654f7c6d562b59b620c85507c2762f2c21b40430230351093"
     },
     {
       "path": "docs/screens/batch-attendance-success.png",
-      "bytes": 200327,
-      "sha256": "42f6b7ff5bbbb92f2166061c39c158b0dfd845866fd51f34c64753b06007170b"
+      "bytes": 200285,
+      "sha256": "8b5b644535421984ab999ab4d424aa1a53c2e91e655ceca753fb7f15bf8482e9"
     }
   ],
   "video": {
-    "bytes": 261349,
+    "bytes": 261323,
     "timecodeScale": 1000000,
     "clusters": 2,
     "frames": 33,
-    "lastTimestampMs": 30394,
-    "durationKnown": false,
-    "durationMs": 30394
+    "lastClusterTimestampMs": 30696,
+    "lastFrameStartMs": 36157,
+    "frameDeltaMs": 1098,
+    "durationMs": 36157,
+    "durationKnown": false
   }
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { canCorrect, canRevealMobile, permissionReason, THIRTY_DAYS_MS } from "./permissions";
+import { canBatchAttendance, canCorrect, canRevealMobile, permissionReason, THIRTY_DAYS_MS } from "./permissions";
 
 const endsAt = "2026-10-18T17:30:00+08:00";
 const endMs = new Date(endsAt).getTime();
@@ -23,9 +23,15 @@ describe("30-day correction permission", () => {
     expect(canRevealMobile("manager")).toBe(true);
   });
 
-  it("gives the read-only auditor no mobile or correction permission", () => {
+  it("gives the read-only auditor no mobile, correction or batch permission", () => {
     expect(canRevealMobile("auditor")).toBe(false);
     expect(canCorrect("auditor", endsAt, endMs)).toBe(false);
+    expect(canBatchAttendance("auditor")).toBe(false);
     expect(permissionReason("auditor", endsAt, endMs)).toBe("只读审计员无更正权限");
+  });
+
+  it("lets manager and supervisor batch-record attendance", () => {
+    expect(canBatchAttendance("manager")).toBe(true);
+    expect(canBatchAttendance("supervisor")).toBe(true);
   });
 });

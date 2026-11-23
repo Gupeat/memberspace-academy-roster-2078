@@ -2,6 +2,7 @@ import rawRoster from "../../mock/roster.json";
 import type {
   BatchAttendanceInput,
   LearningRecordInput,
+  Role,
   RosterPayload,
   RosterRow,
   SessionInfo,
@@ -12,6 +13,7 @@ import {
   validateBatch,
   validateLearningRecord,
 } from "../domain/stats";
+import { canBatchAttendance, canCorrect, canRevealMobile } from "../domain/permissions";
 
 const seed = rawRoster as RosterPayload;
 const session: SessionInfo = seed.session;
@@ -45,7 +47,8 @@ export async function loadRoster(sid: string): Promise<{ session: SessionInfo; r
   return { session: clone(session), rows: clone(rows) };
 }
 
-export async function revealMobile(rowId: string): Promise<{ mobile: string; expiresInSeconds: 30 }> {
+export async function revealMobile(rowId: string, role: Role): Promise<{ mobile: string; expiresInSeconds: 30 }> {
+  if (!canRevealMobile(role)) throw new Error("只读审计员无手机号查看权限");
   await delay(90);
   const row = rows.find((item) => item.id === rowId);
   if (!row) throw new Error("名单行不存在：" + rowId);
@@ -55,7 +58,9 @@ export async function revealMobile(rowId: string): Promise<{ mobile: string; exp
 
 export async function batchAttendance(
   input: BatchAttendanceInput,
+  role: Role,
 ): Promise<{ updated: number; rows: RosterRow[]; requestNo: number }> {
+  if (!canBatchAttendance(role)) throw new Error("只读审计员无补录权限");
   await delay(120);
   const validation = validateBatch(input, rows);
   if (!validation.ok) throw new Error(validation.errors.join("；"));
@@ -68,7 +73,9 @@ export async function batchAttendance(
 export async function updateLearningRecord(
   rowId: string,
   input: LearningRecordInput,
+  role: Role,
 ): Promise<{ row: RosterRow; requestNo: number }> {
+  if (!canCorrect(role, session.endsAt)) throw new Error("当前身份无学习记录更正权限");
   await delay(90);
   if (!rows.some((row) => row.id === rowId)) throw new Error("名单行不存在：" + rowId);
   const validation = validateLearningRecord(input);

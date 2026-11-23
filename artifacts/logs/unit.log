@@ -1,9 +1,9 @@
 RUN  v2.1.8 <repo>
 
- ✓ src/domain/permissions.test.ts (4 tests) 6ms
- ✓ src/domain/stats.test.ts (11 tests) 15ms
+ ✓ src/domain/permissions.test.ts (5 tests) 6ms
+ ✓ src/domain/stats.test.ts (11 tests) 18ms
 
  Test Files  2 passed (2)
-      Tests  15 passed (15)
-   Start at  06:12:55
-   Duration  1.50s (transform 164ms, setup 0ms, collect 274ms, tests 21ms, environment 1ms, prepare 477ms)
+      Tests  16 passed (16)
+   Start at  07:00:50
+   Duration  1.52s (transform 177ms, setup 0ms, collect 248ms, tests 24ms, environment 1ms, prepare 505ms)

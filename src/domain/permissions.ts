@@ -9,9 +9,14 @@ export function canCorrect(role: Role, endsAt: string, now: number = Date.now())
 }
 
 const MOBILE_REVEAL_ROLES: ReadonlySet<Role> = new Set<Role>(["manager", "supervisor"]);
+const BATCH_ATTENDANCE_ROLES: ReadonlySet<Role> = new Set<Role>(["manager", "supervisor"]);
 
 export function canRevealMobile(role: Role): boolean {
   return MOBILE_REVEAL_ROLES.has(role);
+}
+
+export function canBatchAttendance(role: Role): boolean {
+  return BATCH_ATTENDANCE_ROLES.has(role);
 }
 
 export function permissionReason(role: Role, endsAt: string, now: number = Date.now()): string {
