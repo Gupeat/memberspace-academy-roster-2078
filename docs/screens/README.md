@@ -18,6 +18,6 @@
 | batch-attendance.png | 勾选 2 行、说明留空、红字提示、批量请求计数 0 | AC3 |
 | batch-attendance-success.png | 填写说明后提交成功、批量请求计数 1 | AC3 |
 
-<code>reveal-mobile.webm</code> 为浏览器 MediaRecorder 生成的 VP9 WebM，不是 MP4；本机没有 ffmpeg，改名成 MP4 会造成误导，因此保持真实格式。录制步骤约 36–41 秒，成片约 30.4 秒/33 帧；WebM 不写 Duration 元素，部分播放器显示 Infinity，完整播放仍覆盖 30 秒倒计时与恢复脱敏。录屏脚本会校验 WebM 文件头与 EBML 帧/时间戳，并在结束时断言手机号已恢复脱敏。
+<code>reveal-mobile.webm</code> 为浏览器 MediaRecorder 生成的 VP9 WebM，不是 MP4；本机没有 ffmpeg，改名成 MP4 会造成误导，因此保持真实格式。录制步骤约 40 秒，末帧时间戳约 36.2 秒/33 帧；WebM 不写 Duration 元素，部分播放器显示 Infinity，完整播放仍覆盖 30 秒倒计时与恢复脱敏。录屏脚本会校验 WebM 文件头与 EBML 帧/时间戳，并在结束时断言手机号已恢复脱敏。
 
 截图哈希与完整步骤见 <code>artifacts/ACCEPTANCE.md</code>（运行 <code>pnpm verify</code> 后生成）。

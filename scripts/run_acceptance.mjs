@@ -143,7 +143,7 @@ function main() {
   lines.push("- 结果：" + (videoStep?.ok ? "PASS" : "FAIL") + "，exit=" + (videoStep?.exitCode ?? "未执行"));
   lines.push("- 证据：" + SCREEN_PREFIX + "/reveal-mobile.webm；reveal-mobile-before.png / reveal-mobile-after.png 为前后帧。");
   if (video) {
-    lines.push("- 成片探针：" + video.frames + " 帧，最后 cluster " + video.lastTimestampMs + " ms；录制步骤约 " + videoStep?.elapsed + " 秒；WebM 不写 Duration 元素，部分播放器显示 Infinity，但完整播放可覆盖 30 秒倒计时并恢复掩码。");
+    lines.push("- 成片探针：" + video.frames + " 帧，末帧时间戳 " + video.durationMs + " ms（约 " + (video.durationMs / 1000).toFixed(1) + " 秒）；录制步骤约 " + videoStep?.elapsed + " 秒；WebM 不写 Duration 元素，部分播放器显示 Infinity，但完整播放可覆盖 30 秒倒计时并恢复掩码。");
   }
   lines.push("- 回归输出：");
   lines.push("");

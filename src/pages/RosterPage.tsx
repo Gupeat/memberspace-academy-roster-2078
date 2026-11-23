@@ -18,7 +18,7 @@ import {
   validateBatch,
   validateLearningRecord,
 } from "../domain/stats";
-import { canCorrect, canRevealMobile, permissionReason } from "../domain/permissions";
+import { canBatchAttendance, canCorrect, canRevealMobile, permissionReason } from "../domain/permissions";
 import type {
   AttendanceOutcome,
   Filters,
@@ -157,7 +157,9 @@ export function RosterPage() {
   const revealActive = Object.values(revealedUntil).some((until) => until > nowMs);
   const canCorrectNow = session ? canCorrect(role, session.endsAt, nowMs) : false;
   const canRevealNow = canRevealMobile(role);
+  const canBatchNow = canBatchAttendance(role);
   const correctionReason = session ? permissionReason(role, session.endsAt, nowMs) : "";
+  const batchReason = canBatchNow ? "" : "只读审计员无补录权限";
   const endedDays = session
     ? Math.floor((nowMs - Date.parse(session.endsAt)) / (24 * 60 * 60 * 1000))
     : 0;
@@ -168,11 +170,20 @@ export function RosterPage() {
     return () => window.clearInterval(timer);
   }, [revealActive]);
 
+  function applyRole(next: Role) {
+    setRole(next);
+    setRevealedUntil({});
+    setSelectedIds(new Set());
+    setLearningRow(null);
+    setBatchOpen(false);
+  }
+
   function setFilter<K extends keyof Filters>(key: K, value: Filters[K]) {
     setFilters((previous) => ({ ...previous, [key]: value }));
   }
 
   function toggleSelectAll() {
+    if (!canBatchNow) return;
     setSelectedIds((previous) => {
       const next = new Set(previous);
       if (allVisibleSelected) {
@@ -185,7 +196,7 @@ export function RosterPage() {
   }
 
   function toggleSelected(row: RosterRow) {
-    if (row.status !== "confirmed") return;
+    if (!canBatchNow || row.status !== "confirmed") return;
     setSelectedIds((previous) => {
       const next = new Set(previous);
       if (next.has(row.id)) next.delete(row.id);
@@ -197,7 +208,7 @@ export function RosterPage() {
   async function handleReveal(row: RosterRow) {
     if (!canRevealMobile(role)) return;
     try {
-      const response = await revealMobile(row.id);
+      const response = await revealMobile(row.id, role);
       setRevealedUntil((previous) => ({
         ...previous,
         [row.id]: Date.now() + response.expiresInSeconds * 1000,
@@ -211,6 +222,7 @@ export function RosterPage() {
   }
 
   function openBatch() {
+    if (!canBatchNow) return;
     setBatchError("");
     setBatchOutcome("checked");
     setBatchHours(2);
@@ -224,6 +236,10 @@ export function RosterPage() {
   }
 
   async function submitBatch() {
+    if (!canBatchAttendance(role)) {
+      setBatchError("只读审计员无补录权限");
+      return;
+    }
     const input = {
       selectedIds: Array.from(selectedIds),
       outcome: batchOutcome,
@@ -238,7 +254,7 @@ export function RosterPage() {
     setBatchSubmitting(true);
     setBatchError("");
     try {
-      const result = await batchAttendance(input);
+      const result = await batchAttendance(input, role);
       setRows(result.rows);
       setSelectedIds(new Set());
       setCounts(mockCounts());
@@ -252,6 +268,7 @@ export function RosterPage() {
   }
 
   function openLearning(row: RosterRow) {
+    if (!canCorrectNow) return;
     setLearningRow(row);
     setLearningStatus(row.learning_status);
     setLearningHours(row.learning_hours);
@@ -266,6 +283,10 @@ export function RosterPage() {
 
   async function submitLearning() {
     if (!learningRow) return;
+    if (!canCorrectNow) {
+      setLearningError(correctionReason || "当前身份无学习记录更正权限");
+      return;
+    }
     const input: LearningRecordInput = {
       status: learningStatus,
       hours: learningHours,
@@ -279,7 +300,7 @@ export function RosterPage() {
     setLearningSubmitting(true);
     setLearningError("");
     try {
-      const result = await updateLearningRecord(learningRow.id, input);
+      const result = await updateLearningRecord(learningRow.id, input, role);
       setRows((previous) => previous.map((row) => (row.id === result.row.id ? result.row : row)));
       setCounts(mockCounts());
       setLearningRow(null);
@@ -333,10 +354,7 @@ export function RosterPage() {
             <select
               aria-label="演示身份"
               value={role}
-              onChange={(event) => {
-                setRole(event.target.value as Role);
-                setRevealedUntil({});
-              }}
+              onChange={(event) => applyRole(event.target.value as Role)}
             >
               <option value="manager">会员经理</option>
               <option value="supervisor">主管</option>
@@ -363,7 +381,7 @@ export function RosterPage() {
             <strong>更正受限期：</strong>
             {correctionReason}。当前身份为{ROLE_LABEL[role]}，学习记录更正按钮已禁用。
           </div>
-          <button className="link-button" type="button" onClick={() => setRole("supervisor")}>
+          <button className="link-button" type="button" onClick={() => applyRole("supervisor")}>
             切换为主管（演示）
           </button>
         </div>
@@ -457,7 +475,7 @@ export function RosterPage() {
           </span>
           <span className="selection-actions">
             <span data-testid="batch-open-wrap">
-              <Button theme="primary" disabled={selectedCount === 0} onClick={openBatch}>
+              <Button theme="primary" disabled={selectedCount === 0 || !canBatchNow} title={batchReason} onClick={openBatch}>
                 批量补录出勤
               </Button>
             </span>
@@ -469,7 +487,7 @@ export function RosterPage() {
               清空选择
             </Button>
           </span>
-          <span className="selection-hint">仅“已通过”行可补录；补录说明必填。</span>
+          <span className="selection-hint">{canBatchNow ? "仅“已通过”行可补录；补录说明必填。" : "只读审计员无补录、更正权限。"}</span>
         </div>
 
         <div className="table-wrap">
@@ -482,7 +500,8 @@ export function RosterPage() {
                     aria-label="选择当前筛选下的全部已通过行"
                     checked={allVisibleSelected}
                     onChange={toggleSelectAll}
-                    disabled={selectableFiltered.length === 0}
+                    disabled={!canBatchNow || selectableFiltered.length === 0}
+                    title={batchReason || "选择当前筛选下的全部已通过行"}
                   />
                 </th>
                 <th>姓名</th>
@@ -517,8 +536,8 @@ export function RosterPage() {
                         aria-label={"选择 " + row.name}
                         checked={selectedIds.has(row.id)}
                         onChange={() => toggleSelected(row)}
-                        disabled={row.status !== "confirmed"}
-                        title={row.status === "confirmed" ? "" : "仅已通过行可补录"}
+                        disabled={!canBatchNow || row.status !== "confirmed"}
+                        title={!canBatchNow ? batchReason : row.status === "confirmed" ? "" : "仅已通过行可补录"}
                       />
                     </td>
                     <td>
@@ -575,7 +594,7 @@ export function RosterPage() {
                         </Tag>
                         <span className="hours">{row.learning_hours > 0 ? row.learning_hours + " 学时" : "—"}</span>
                         {row.status === "confirmed" && (
-                          <span title={correctionReason || "更正学习记录"}>
+                          <span title={correctionReason || "更正学习记录"} data-testid={"learning-open-" + row.id}>
                             <Button
                               variant="text"
                               size="small"
@@ -699,7 +718,7 @@ export function RosterPage() {
         onClose={closeLearning}
       >
         {learningRow && (
-          <div className="drawer-body">
+          <div className="drawer-body" data-testid="learning-drawer">
             <div className="drawer-person">
               <strong>{learningRow.name}</strong>
               <span>{learningRow.company}</span>
@@ -752,7 +771,8 @@ export function RosterPage() {
                 className="primary-button"
                 type="button"
                 onClick={() => void submitLearning()}
-                disabled={learningSubmitting}
+                disabled={!canCorrectNow || learningSubmitting}
+                data-testid="learning-save"
               >
                 {learningSubmitting ? "保存中…" : "保存更正"}
               </button>

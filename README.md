@@ -65,7 +65,7 @@
     pnpm capture     # 真实 30 秒录屏（AC2）
     pnpm verify      # 一键跑全部步骤，写 artifacts/ACCEPTANCE.md
 
-当前基线：2 个测试文件、15 例领域测试；<code>pnpm check</code> 六卡对账 PASS；<code>pnpm e2e</code> 三条 AC 全 PASS；<code>pnpm verify</code> 总体 PASS，生成 <code>artifacts/ACCEPTANCE.md</code>、<code>artifacts/acceptance.json</code> 与 <code>artifacts/logs/</code>。
+当前基线：2 个测试文件、16 例领域测试；<code>pnpm check</code> 六卡对账 PASS；<code>pnpm e2e</code> 三条 AC 全 PASS；<code>pnpm verify</code> 总体 PASS，生成 <code>artifacts/ACCEPTANCE.md</code>、<code>artifacts/acceptance.json</code> 与 <code>artifacts/logs/</code>。
 
 干净副本复跑：把源码复制到空目录（排除 <code>node_modules</code>、<code>dist</code>、<code>artifacts</code>、<code>.esbuild-tmp</code>），执行 <code>pnpm install --offline --frozen-lockfile</code> 与 <code>node scripts/run_acceptance.mjs</code>，同一套步骤 PASS；证据在 <code>artifacts/clean-room/</code>。<code>--offline</code> 依赖本机 pnpm store，全新机器可去掉该参数让 pnpm 联网解析。
 
@@ -97,15 +97,15 @@
 
 ### 6.5 批量补录出勤
 
-只处理“已通过”行；可多选；补录结果支持“已签到/请假/未到场”；学时 0–24；说明必填、最多 200 字。前端校验通过后才调用 mock；空说明时按钮不提交、请求计数不增加。已签到会写入签到时间并置“已扣权益”；请假/未到场清空签到时间且不扣权益。
+只处理“已通过”行；可多选；补录结果支持“已签到/请假/未到场”；学时 0–24；说明必填、最多 200 字。只读审计员不渲染可用的行复选框、批量按钮禁用，<code>submitBatch</code> 与 mock 的 <code>batchAttendance</code> 都会再次拒绝；前端校验通过后才调用 mock；空说明时按钮不提交、请求计数不增加。已签到会写入签到时间并置“已扣权益”；请假/未到场清空签到时间且不扣权益。
 
 ### 6.6 单行学习记录更正
 
-行内“更正”打开抽屉，可改学习状态、学时、说明；说明必填、最多 200 字；保存成功后行内状态与学时更新。
+行内“更正”打开抽屉，可改学习状态、学时、说明；说明必填、最多 200 字；保存成功后行内状态与学时更新。只读审计员不渲染可用按钮；切换身份会同时关闭抽屉、清空已选行与已查看手机号，<code>submitLearning</code> 与 mock 的 <code>updateLearningRecord</code> 都会再次校验权限。
 
 ### 6.7 30 天权限
 
-课期结束时间 <code>2026-10-18T17:30:00+08:00</code>。结束超过 30 天（即晚于 <code>2026-11-17T17:30:00+08:00</code>）后，会员经理的“更正”按钮禁用，页面顶部显示“课期结束超过 30 天，需主管权限”；主管不受限。演示页默认以经理身份进入，并提供“切换为主管（演示）”。边界规则为 <code>now &lt;= endsAt + 30 天</code> 仍可更正，超过 1ms 即禁用。只读审计员在任何时间都无更正权限。
+课期结束时间 <code>2026-10-18T17:30:00+08:00</code>。结束超过 30 天（即晚于 <code>2026-11-17T17:30:00+08:00</code>）后，会员经理的“更正”按钮禁用，页面顶部显示“课期结束超过 30 天，需主管权限”；主管不受限。演示页默认以经理身份进入，并提供“切换为主管（演示）”。边界规则为 <code>now &lt;= endsAt + 30 天</code> 仍可更正，超过 1ms 即禁用。只读审计员在任何时间都无更正、补录和手机号查看权限。
 
 ### 6.8 待审核行
 
@@ -120,9 +120,9 @@
 <code>src/api/mockApi.ts</code> 提供：
 
 - <code>loadRoster()</code>：读取内存 rows；
-- <code>revealMobile(rowId)</code>：返回完整手机号与 30 秒有效期的 expiresAt；
-- <code>batchAttendance(input)</code>：先校验，再应用；成功才写请求日志；
-- <code>updateLearningRecord(rowId, input)</code>：单行更正；
+- <code>revealMobile(rowId, role)</code>：先校验角色，再返回完整手机号与 30 秒有效期的 expiresAt；
+- <code>batchAttendance(input, role)</code>：先校验角色与输入，再应用；成功才写请求日志；
+- <code>updateLearningRecord(rowId, input, role)</code>：先校验角色，再单行更正；
 - <code>getMockRequestCount(kind?)</code> / <code>getMockRequestLog()</code> / <code>currentRows()</code>：验收断言与调试。
 
 刷新页面恢复种子数据。没有真实 HTTP 请求；若要接后端，替换 <code>src/api/mockApi.ts</code> 的五个导出函数即可，页面不依赖传输层。
@@ -130,7 +130,7 @@
 ## 8. 截图 / 录屏
 
 - 截图：Playwright + Edge headless，e2e 视口 1440×1100；<code>roster-stats.png</code> 为全页 1440×6664；<code>mobile-no-permission.png</code> 为只读审计员身份下的全页截图（无“查看”按钮）。
-- 录屏：<code>scripts/capture-reveal.mjs</code> 在页面注入 detached canvas，逐秒用 Playwright 截帧并 drawImage，<code>canvas.captureStream(1)</code> + MediaRecorder 生成 WebM；不依赖 ffmpeg、不修改 DOM 可见结构。录制步骤约 36–41 秒（含启动与收尾），成片约 30.4 秒/33 帧，覆盖完整 30 秒倒计时与恢复脱敏；WebM 不写 Duration 元素，部分播放器会显示 Infinity，完整播放不受影响。
+- 录屏：<code>scripts/capture-reveal.mjs</code> 在页面注入 detached canvas，逐秒用 Playwright 截帧并 drawImage，<code>canvas.captureStream(1)</code> + MediaRecorder 生成 WebM；不依赖 ffmpeg、不修改 DOM 可见结构。录制步骤约 40 秒（含启动与收尾），末帧时间戳约 36.2 秒/33 帧，覆盖完整 30 秒倒计时与恢复脱敏；WebM 不写 Duration 元素，部分播放器会显示 Infinity，完整播放不受影响。
 - 录屏不是 MP4：本机无 ffmpeg，WebM 是浏览器原生可播放格式；README 与验收记录均如实写明，不把 GIF/WebM 改名成 MP4。
 
 ## 9. 已知限制

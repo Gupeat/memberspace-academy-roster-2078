@@ -57,6 +57,10 @@ async function main() {
   let browser;
   try {
     await waitForServer();
+    await wait(500);
+    if (server.exitCode !== null) {
+      throw new Error("预览服务器启动失败，退出码 " + server.exitCode + "（常见原因：4173 端口被占用）");
+    }
     browser = await chromium.launch({ executablePath: findBrowser(), headless: true });
 
     const context = await browser.newContext({ viewport: { width: 1440, height: 1100 }, deviceScaleFactor: 1 });
@@ -85,14 +89,28 @@ async function main() {
       await page.screenshot({ path: resolve(SCREENS, "roster-stats.png"), fullPage: true });
     }
 
-    // AC2 permission split: the read-only auditor has no reveal button and stays masked.
+    // AC2 permission split: the read-only auditor has no reveal, batch or correction power.
+    await page.locator('select[aria-label="演示身份"]').selectOption("supervisor");
+    await page.locator('[data-testid="learning-open-r020"] button').click();
+    await page.waitForSelector('[data-testid="learning-drawer"]');
     await page.locator('select[aria-label="演示身份"]').selectOption("auditor");
-    assertEqual(await textOf(page, '[data-testid="mobile-value-r020"]'), "*******1234", "只读审计员手机号仍脱敏");
+    assertEqual(String(await page.locator('[data-testid="learning-drawer"]').count()), "0", "切换只读审计员后更正抽屉应关闭");
     assertEqual(
       String(await page.locator('tbody button[data-testid^="mobile-reveal-"]').count()),
       "0",
       "只读审计员的查看按钮数",
     );
+    assertEqual(
+      String(await page.locator('tbody input[type="checkbox"]:not([disabled])').count()),
+      "0",
+      "只读审计员可勾选的行数",
+    );
+    assertEqual(
+      String(((await page.locator('[data-testid="batch-open-wrap"] .t-button').getAttribute("class")) ?? "").includes("t-is-disabled")),
+      "true",
+      "只读审计员批量补录按钮禁用",
+    );
+    assertEqual(await textOf(page, '[data-testid="mobile-value-r020"]'), "*******1234", "只读审计员手机号仍脱敏");
     if (CAPTURE) {
       await page.screenshot({ path: resolve(SCREENS, "mobile-no-permission.png"), fullPage: true });
     }
@@ -122,7 +140,7 @@ async function main() {
     await selectable.nth(0).check();
     await selectable.nth(1).check();
     assertEqual(await textOf(page, '[data-testid="selected-count"]'), "已选 2 人", "勾选人数");
-    await page.locator('[data-testid="batch-open-wrap"] button').click();
+    await page.locator('[data-testid="batch-open-wrap"] .t-button').click();
     await page.waitForSelector('[data-testid="batch-submit"]');
     await page.locator('[data-testid="batch-submit"]').click();
     await page.waitForSelector('[data-testid="batch-error"]');
@@ -150,7 +168,7 @@ async function main() {
       mode: FAST ? "fast-clock" : "real-time",
       checks: [
         "AC1 六卡与 128 行一致",
-        "AC2 只读审计员不渲染查看按钮且手机号保持脱敏",
+        "AC2 只读审计员不渲染查看按钮、不可勾选/批量补录、切换后更正抽屉关闭且手机号保持脱敏",
         "AC2 查看后显示完整手机号",
         FAST ? "AC2 30 秒窗口到期后恢复脱敏（假时钟）" : "AC2 查看手机号（点击后完整号码；30 秒恢复由 --fast 与 capture 验证）",
         "AC3 空说明被拒绝且 mock 请求数为 0",

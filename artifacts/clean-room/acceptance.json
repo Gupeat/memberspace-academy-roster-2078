@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-11-23T22:20:16Z",
+  "generatedAt": "2026-11-23T23:06:42Z",
   "passed": true,
-  "evidenceDir": ".",
+  "evidenceDir": "artifacts/clean-room",
   "node": "v24.21.0",
   "platform": "win32 x64",
   "steps": [
@@ -14,8 +14,8 @@
       ],
       "ok": true,
       "exitCode": 0,
-      "elapsed": "0.16",
-      "log": "artifacts/logs/check.log",
+      "elapsed": "0.17",
+      "log": "artifacts/clean-room/logs/check.log",
       "outputTail": "指标 | 公式 | 重算 | 期望 | 结果\n---|---|---|---|---\n报名数 | rows.length | 128 | 128 | PASS\n候补数 | status=waitlist | 12 | 12 | PASS\n待审核数 | status=pending | 7 | 7 | PASS\n签到数 | checked_in_at != null | 96 | 96 | PASS\n出勤率 | checkedIn / registered | 75.0% | 75.0% | PASS\n非会员数 | is_member=false | 23 | 23 | PASS\n分项闭合：签到 96 + 已通过未签到 13 + 候补 12 + 待审核 7 = 128\nr020 脱敏：*******1234\n{\n  \"ok\": true,\n  \"stats\": {\n    \"registered\": 128,\n    \"waitlist\": 12,\n    \"pending\": 7,\n    \"checkedIn\": 96,\n    \"attendanceRate\": \"75.0\",\n    \"nonMember\": 23\n  },\n  \"confirmed\": 109,\n  \"confirmedNotChecked\": 13,\n  \"revealRow\": \"r020\"\n}"
     },
     {
@@ -27,9 +27,9 @@
       ],
       "ok": true,
       "exitCode": 0,
-      "elapsed": "50.39",
-      "log": "artifacts/logs/build.log",
-      "outputTail": "vite v5.4.11 building for production...\ntransforming...\n✓ 3907 modules transformed.\nrendering chunks...\ncomputing gzip size...\ndist/index.html                   0.68 kB │ gzip:   0.51 kB\ndist/assets/index-BugbCbPV.css  100.01 kB │ gzip:  11.88 kB\ndist/assets/index-CaBAABXh.js   355.17 kB │ gzip: 109.89 kB\n✓ built in 43.47s"
+      "elapsed": "49.75",
+      "log": "artifacts/clean-room/logs/build.log",
+      "outputTail": "vite v5.4.11 building for production...\ntransforming...\n✓ 3907 modules transformed.\nrendering chunks...\ncomputing gzip size...\ndist/index.html                   0.68 kB │ gzip:   0.51 kB\ndist/assets/index-BugbCbPV.css  100.01 kB │ gzip:  11.88 kB\ndist/assets/index-_t2zIgVv.js   355.74 kB │ gzip: 110.06 kB\n✓ built in 42.69s"
     },
     {
       "id": "typecheck",
@@ -41,8 +41,8 @@
       ],
       "ok": true,
       "exitCode": 0,
-      "elapsed": "5.64",
-      "log": "artifacts/logs/typecheck.log",
+      "elapsed": "5.72",
+      "log": "artifacts/clean-room/logs/typecheck.log",
       "outputTail": ""
     },
     {
@@ -55,9 +55,9 @@
       ],
       "ok": true,
       "exitCode": 0,
-      "elapsed": "2.90",
-      "log": "artifacts/logs/unit.log",
-      "outputTail": "RUN  v2.1.8 <repo>\n ✓ src/domain/permissions.test.ts (4 tests) 6ms\n ✓ src/domain/stats.test.ts (11 tests) 15ms\n Test Files  2 passed (2)\n      Tests  15 passed (15)\n   Start at  06:19:16\n   Duration  1.65s (transform 186ms, setup 0ms, collect 258ms, tests 20ms, environment 1ms, prepare 576ms)"
+      "elapsed": "3.01",
+      "log": "artifacts/clean-room/logs/unit.log",
+      "outputTail": "RUN  v2.1.8 <repo>\n ✓ src/domain/permissions.test.ts (5 tests) 7ms\n ✓ src/domain/stats.test.ts (11 tests) 15ms\n Test Files  2 passed (2)\n      Tests  16 passed (16)\n   Start at  07:05:39\n   Duration  1.73s (transform 180ms, setup 0ms, collect 269ms, tests 22ms, environment 1ms, prepare 614ms)"
     },
     {
       "id": "e2e-fast",
@@ -69,9 +69,9 @@
       ],
       "ok": true,
       "exitCode": 0,
-      "elapsed": "6.72",
-      "log": "artifacts/logs/e2e-fast.log",
-      "outputTail": "➜  Local:   http://127.0.0.1:4173/\n{\n  \"ok\": true,\n  \"mode\": \"fast-clock\",\n  \"checks\": [\n    \"AC1 六卡与 128 行一致\",\n    \"AC2 只读审计员不渲染查看按钮且手机号保持脱敏\",\n    \"AC2 查看后显示完整手机号\",\n    \"AC2 30 秒窗口到期后恢复脱敏（假时钟）\",\n    \"AC3 空说明被拒绝且 mock 请求数为 0\",\n    \"有效补录请求数为 1\"\n  ],\n  \"screenshots\": []\n}"
+      "elapsed": "7.94",
+      "log": "artifacts/clean-room/logs/e2e-fast.log",
+      "outputTail": "➜  Local:   http://127.0.0.1:4173/\n{\n  \"ok\": true,\n  \"mode\": \"fast-clock\",\n  \"checks\": [\n    \"AC1 六卡与 128 行一致\",\n    \"AC2 只读审计员不渲染查看按钮、不可勾选/批量补录、切换后更正抽屉关闭且手机号保持脱敏\",\n    \"AC2 查看后显示完整手机号\",\n    \"AC2 30 秒窗口到期后恢复脱敏（假时钟）\",\n    \"AC3 空说明被拒绝且 mock 请求数为 0\",\n    \"有效补录请求数为 1\"\n  ],\n  \"screenshots\": []\n}"
     },
     {
       "id": "screens",
@@ -83,9 +83,9 @@
       ],
       "ok": true,
       "exitCode": 0,
-      "elapsed": "11.33",
-      "log": "artifacts/logs/screens.log",
-      "outputTail": "➜  Local:   http://127.0.0.1:4173/\n{\n  \"ok\": true,\n  \"mode\": \"real-time\",\n  \"checks\": [\n    \"AC1 六卡与 128 行一致\",\n    \"AC2 只读审计员不渲染查看按钮且手机号保持脱敏\",\n    \"AC2 查看后显示完整手机号\",\n    \"AC2 查看手机号（点击后完整号码；30 秒恢复由 --fast 与 capture 验证）\",\n    \"AC3 空说明被拒绝且 mock 请求数为 0\",\n    \"有效补录请求数为 1\"\n  ],\n  \"screenshots\": [\n    \"docs/screens/roster-stats.png\",\n    \"docs/screens/mobile-no-permission.png\",\n    \"docs/screens/batch-attendance.png\"\n  ]\n}"
+      "elapsed": "12.08",
+      "log": "artifacts/clean-room/logs/screens.log",
+      "outputTail": "➜  Local:   http://127.0.0.1:4173/\n{\n  \"ok\": true,\n  \"mode\": \"real-time\",\n  \"checks\": [\n    \"AC1 六卡与 128 行一致\",\n    \"AC2 只读审计员不渲染查看按钮、不可勾选/批量补录、切换后更正抽屉关闭且手机号保持脱敏\",\n    \"AC2 查看后显示完整手机号\",\n    \"AC2 查看手机号（点击后完整号码；30 秒恢复由 --fast 与 capture 验证）\",\n    \"AC3 空说明被拒绝且 mock 请求数为 0\",\n    \"有效补录请求数为 1\"\n  ],\n  \"screenshots\": [\n    \"docs/screens/roster-stats.png\",\n    \"docs/screens/mobile-no-permission.png\",\n    \"docs/screens/batch-attendance.png\"\n  ]\n}"
     },
     {
       "id": "video",
@@ -96,60 +96,62 @@
       ],
       "ok": true,
       "exitCode": 0,
-      "elapsed": "40.31",
-      "log": "artifacts/logs/video.log",
-      "outputTail": "➜  Local:   http://127.0.0.1:4173/\nrecorded 5s\nrecorded 10s\nrecorded 15s\nrecorded 20s\nrecorded 25s\nrecorded 30s\n{\n  \"ok\": true,\n  \"file\": \"docs/screens/reveal-mobile.webm\",\n  \"mimeType\": \"video/webm;codecs=vp9\",\n  \"bytes\": 261384,\n  \"elapsedSeconds\": 35,\n  \"video\": {\n    \"bytes\": 261384,\n    \"timecodeScale\": 1000000,\n    \"clusters\": 2,\n    \"frames\": 33,\n    \"lastTimestampMs\": 30398,\n    \"durationKnown\": false,\n    \"durationMs\": 30398\n  },\n  \"finalMobile\": \"*******1234\"\n}"
+      "elapsed": "40.83",
+      "log": "artifacts/clean-room/logs/video.log",
+      "outputTail": "recorded 10s\nrecorded 15s\nrecorded 20s\nrecorded 25s\nrecorded 30s\n{\n  \"ok\": true,\n  \"file\": \"artifacts/clean-room/docs/screens/reveal-mobile.webm\",\n  \"mimeType\": \"video/webm;codecs=vp9\",\n  \"bytes\": 261472,\n  \"elapsedSeconds\": 36,\n  \"video\": {\n    \"bytes\": 261472,\n    \"timecodeScale\": 1000000,\n    \"clusters\": 2,\n    \"frames\": 33,\n    \"lastClusterTimestampMs\": 30810,\n    \"lastFrameStartMs\": 36283,\n    \"frameDeltaMs\": 1084,\n    \"durationMs\": 36283,\n    \"durationKnown\": false\n  },\n  \"finalMobile\": \"*******1234\"\n}"
     }
   ],
   "evidence": [
     {
-      "path": "docs/screens/roster-stats.png",
-      "bytes": 968321,
-      "sha256": "468dd1e40abeeed3767ba6ed346db5367388d3ceb1a024a4f1467afe30d96e6a"
+      "path": "artifacts/clean-room/docs/screens/roster-stats.png",
+      "bytes": 968094,
+      "sha256": "b4b109b455f5ceeab67c8e06bf07cc5a5809e4dfa78f4d197f198c2b0767cb84"
     },
     {
-      "path": "docs/screens/mobile-no-permission.png",
-      "bytes": 918900,
-      "sha256": "a876593b3df293723482bd6394b0d8d5115f3602b3f7d17ee7ca411b95843885"
+      "path": "artifacts/clean-room/docs/screens/mobile-no-permission.png",
+      "bytes": 921964,
+      "sha256": "d59e481af1d54d2722421ae4f7e4aa09a8175feea36d457cb044f75b3bbc6d1c"
     },
     {
-      "path": "docs/screens/reveal-mobile-before.png",
-      "bytes": 172223,
-      "sha256": "ab0bd10ba42d70e72fc9cbc62b962d1665cd3a6c7e276febd5856f1e9143695e"
+      "path": "artifacts/clean-room/docs/screens/reveal-mobile-before.png",
+      "bytes": 171535,
+      "sha256": "c632526fdd72301ebe06cb3bda4f2c36d0133fc70b69732ad59562c31a26e16a"
     },
     {
-      "path": "docs/screens/reveal-mobile-poster.png",
+      "path": "artifacts/clean-room/docs/screens/reveal-mobile-poster.png",
       "bytes": 115429,
       "sha256": "f1e9bac9ead68fcd9e4815b9d3c626765535fc82a4aa534e8b77c4e5f6ad9adb"
     },
     {
-      "path": "docs/screens/reveal-mobile-after.png",
+      "path": "artifacts/clean-room/docs/screens/reveal-mobile-after.png",
       "bytes": 115541,
       "sha256": "d769cef088e8db4fbc32949b8ed33078ac41d41e1da8d990e578bb66cbce2354"
     },
     {
-      "path": "docs/screens/reveal-mobile.webm",
-      "bytes": 261384,
-      "sha256": "34ba7b5e7cdc6fdd3bcdf0d157109fbaf61f161d70884b9277f82d4e3e79f676"
+      "path": "artifacts/clean-room/docs/screens/reveal-mobile.webm",
+      "bytes": 261472,
+      "sha256": "87ce1bd3a58ffeae56c33ae3a02232f67457fcf453d813fc0cbdaaf9dd708de7"
     },
     {
-      "path": "docs/screens/batch-attendance.png",
-      "bytes": 168683,
-      "sha256": "d8c4dc22c181ccdadca2ad88e7ffb1351871030fa4363238d73907774f9342c3"
+      "path": "artifacts/clean-room/docs/screens/batch-attendance.png",
+      "bytes": 168673,
+      "sha256": "16375d08a8b65d282cb934fea66b5786f565621fc5ec5d176ce7b6502f532902"
     },
     {
-      "path": "docs/screens/batch-attendance-success.png",
-      "bytes": 200318,
-      "sha256": "80a7810ca17ad0ba942a50a7f0c4af73017c8a0c4cc3867758f699224eebbd59"
+      "path": "artifacts/clean-room/docs/screens/batch-attendance-success.png",
+      "bytes": 200356,
+      "sha256": "b50211e861625ac2f10d486e9f5863024e8591e42db53bfd47ef3ee4aeb8f057"
     }
   ],
   "video": {
-    "bytes": 261384,
+    "bytes": 261472,
     "timecodeScale": 1000000,
     "clusters": 2,
     "frames": 33,
-    "lastTimestampMs": 30398,
-    "durationKnown": false,
-    "durationMs": 30398
+    "lastClusterTimestampMs": 30810,
+    "lastFrameStartMs": 36283,
+    "frameDeltaMs": 1084,
+    "durationMs": 36283,
+    "durationKnown": false
   }
 }
