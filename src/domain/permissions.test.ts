@@ -22,4 +22,10 @@ describe("30-day correction permission", () => {
     expect(permissionReason("manager", endsAt, after)).toBe("课期结束超过 30 天，需主管权限");
     expect(canRevealMobile("manager")).toBe(true);
   });
+
+  it("gives the read-only auditor no mobile or correction permission", () => {
+    expect(canRevealMobile("auditor")).toBe(false);
+    expect(canCorrect("auditor", endsAt, endMs)).toBe(false);
+    expect(permissionReason("auditor", endsAt, endMs)).toBe("只读审计员无更正权限");
+  });
 });

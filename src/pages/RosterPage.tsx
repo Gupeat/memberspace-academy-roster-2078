@@ -31,6 +31,7 @@ import type {
 import {
   LEARNING_LABEL,
   OUTCOME_LABEL,
+  ROLE_LABEL,
   SOURCE_LABEL,
   STATUS_LABEL,
 } from "../domain/types";
@@ -155,6 +156,7 @@ export function RosterPage() {
     selectableFiltered.length > 0 && selectableFiltered.every((row) => selectedIds.has(row.id));
   const revealActive = Object.values(revealedUntil).some((until) => until > nowMs);
   const canCorrectNow = session ? canCorrect(role, session.endsAt, nowMs) : false;
+  const canRevealNow = canRevealMobile(role);
   const correctionReason = session ? permissionReason(role, session.endsAt, nowMs) : "";
   const endedDays = session
     ? Math.floor((nowMs - Date.parse(session.endsAt)) / (24 * 60 * 60 * 1000))
@@ -331,10 +333,14 @@ export function RosterPage() {
             <select
               aria-label="演示身份"
               value={role}
-              onChange={(event) => setRole(event.target.value as Role)}
+              onChange={(event) => {
+                setRole(event.target.value as Role);
+                setRevealedUntil({});
+              }}
             >
               <option value="manager">会员经理</option>
               <option value="supervisor">主管</option>
+              <option value="auditor">只读审计员</option>
             </select>
           </label>
           <div className={endedDays > 0 ? "session-pill is-ended" : "session-pill"}>
@@ -355,7 +361,7 @@ export function RosterPage() {
         <div className="notice" data-testid="permission-notice">
           <div>
             <strong>更正受限期：</strong>
-            {correctionReason}。当前身份为会员经理，学习记录更正按钮已禁用。
+            {correctionReason}。当前身份为{ROLE_LABEL[role]}，学习记录更正按钮已禁用。
           </div>
           <button className="link-button" type="button" onClick={() => setRole("supervisor")}>
             切换为主管（演示）
@@ -501,7 +507,7 @@ export function RosterPage() {
               )}
               {filtered.map((row) => {
                 const until = revealedUntil[row.id] ?? null;
-                const revealed = isRevealed(until, nowMs);
+                const revealed = canRevealNow && isRevealed(until, nowMs);
                 const seconds = remainingSeconds(until, nowMs);
                 return (
                   <tr key={row.id} data-testid={"row-" + row.id}>
@@ -533,16 +539,17 @@ export function RosterPage() {
                         </span>
                         {revealed ? (
                           <span className="countdown">{seconds}s</span>
-                        ) : (
+                        ) : canRevealNow ? (
                           <button
                             className="link-button"
                             type="button"
+                            data-testid={"mobile-reveal-" + row.id}
                             onClick={() => void handleReveal(row)}
                             aria-label={"查看 " + row.name + " 的手机号"}
                           >
                             查看
                           </button>
-                        )}
+                        ) : null}
                       </div>
                     </td>
                     <td>{row.member_level || "—"}</td>

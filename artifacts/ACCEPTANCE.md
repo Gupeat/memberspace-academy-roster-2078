@@ -1,6 +1,6 @@
 # 验收记录 · 课期报名名单与出勤补录页
 
-- 生成时间（UTC）：2026-11-22T08:33:19Z
+- 生成时间（UTC）：2026-11-23T22:13:55Z
 - 运行环境：Node v24.21.0 / win32 x64
 - 证据目录：仓库根（docs/screens 与 artifacts）
 - 总体结果：PASS
@@ -42,10 +42,11 @@ r020 脱敏：*******1234
 
 - 回归命令：node scripts/e2e.mjs --fast（假时钟 fast-forward 31 秒）
 - 结果：PASS，exit=0
+- 权限断言：切换“只读审计员”后手机号仍为 *******1234，表格内“查看”按钮数为 0；截图 docs/screens/mobile-no-permission.png。
 - 录屏命令：node scripts/capture-reveal.mjs（真实时间逐秒截帧，MediaRecorder 生成 WebM）
 - 结果：PASS，exit=0
 - 证据：docs/screens/reveal-mobile.webm；reveal-mobile-before.png / reveal-mobile-after.png 为前后帧。
-- 成片探针：33 帧，最后 cluster 30147 ms；录制步骤约 41.39 秒；WebM 不写 Duration 元素，部分播放器显示 Infinity，但完整播放可覆盖 30 秒倒计时并恢复掩码。
+- 成片探针：33 帧，最后 cluster 30394 ms；录制步骤约 40.28 秒；WebM 不写 Duration 元素，部分播放器显示 Infinity，但完整播放可覆盖 30 秒倒计时并恢复掩码。
 - 回归输出：
 
 ~~~text
@@ -55,6 +56,7 @@ r020 脱敏：*******1234
   "mode": "fast-clock",
   "checks": [
     "AC1 六卡与 128 行一致",
+    "AC2 只读审计员不渲染查看按钮且手机号保持脱敏",
     "AC2 查看后显示完整手机号",
     "AC2 30 秒窗口到期后恢复脱敏（假时钟）",
     "AC3 空说明被拒绝且 mock 请求数为 0",
@@ -74,25 +76,26 @@ r020 脱敏：*******1234
 
 | 步骤 | 说明 | exit | 耗时 | 日志 |
 | --- | --- | --- | --- | --- |
-| check | 独立对账 mock 数据（六卡六值 + 分项闭合） | 0 | 0.17s | artifacts/logs/check.log |
-| build | 生产构建 | 0 | 61.09s | artifacts/logs/build.log |
-| typecheck | TypeScript 类型检查 | 0 | 6.72s | artifacts/logs/typecheck.log |
-| unit | 领域逻辑单测 | 0 | 2.80s | artifacts/logs/unit.log |
-| e2e-fast | AC 回归（假时钟验证 30 秒恢复脱敏） | 0 | 6.84s | artifacts/logs/e2e-fast.log |
-| screens | AC 截图（六卡 / 手机号查看 / 批量补录空说明） | 0 | 10.43s | artifacts/logs/screens.log |
-| video | AC2 真实 30 秒录屏 | 0 | 41.39s | artifacts/logs/video.log |
+| check | 独立对账 mock 数据（六卡六值 + 分项闭合） | 0 | 0.16s | artifacts/logs/check.log |
+| build | 生产构建 | 0 | 47.72s | artifacts/logs/build.log |
+| typecheck | TypeScript 类型检查 | 0 | 5.32s | artifacts/logs/typecheck.log |
+| unit | 领域逻辑单测 | 0 | 2.72s | artifacts/logs/unit.log |
+| e2e-fast | AC 回归（假时钟验证 30 秒恢复脱敏） | 0 | 6.68s | artifacts/logs/e2e-fast.log |
+| screens | AC 截图（六卡 / 手机号查看 / 批量补录空说明） | 0 | 11.49s | artifacts/logs/screens.log |
+| video | AC2 真实 30 秒录屏 | 0 | 40.28s | artifacts/logs/video.log |
 
 ## 证据文件 SHA-256
 
 | 文件 | 字节 | SHA-256 |
 | --- | --- | --- |
-| docs/screens/roster-stats.png | 968323 | 43ac7a95e814181b6371fc972bc8fa1cde963073c55aa5edfdd697761c2e34fd |
-| docs/screens/reveal-mobile-before.png | 172176 | d6c27b34a20c9fa9ed3abdc8f8ed7bfa73e40930e4dcd2dea972296acd156f54 |
+| docs/screens/roster-stats.png | 968094 | b4b109b455f5ceeab67c8e06bf07cc5a5809e4dfa78f4d197f198c2b0767cb84 |
+| docs/screens/mobile-no-permission.png | 918900 | a876593b3df293723482bd6394b0d8d5115f3602b3f7d17ee7ca411b95843885 |
+| docs/screens/reveal-mobile-before.png | 172223 | ab0bd10ba42d70e72fc9cbc62b962d1665cd3a6c7e276febd5856f1e9143695e |
 | docs/screens/reveal-mobile-poster.png | 115429 | f1e9bac9ead68fcd9e4815b9d3c626765535fc82a4aa534e8b77c4e5f6ad9adb |
 | docs/screens/reveal-mobile-after.png | 115541 | d769cef088e8db4fbc32949b8ed33078ac41d41e1da8d990e578bb66cbce2354 |
-| docs/screens/reveal-mobile.webm | 261335 | 7b4723198b4cf7b8b85148571791fa4511c693deedc1d3addafbf42e58f13a19 |
-| docs/screens/batch-attendance.png | 168637 | 3f53c765aaf25dd15d45b524d3383d18fb911731c2640ee49ef32afd28c208cc |
-| docs/screens/batch-attendance-success.png | 200201 | 4cacb0deb7a38a7dea15e3748c1d255c805ff4a1e34cc6e6b5c5502d6af8b698 |
+| docs/screens/reveal-mobile.webm | 261349 | 6237fbc1d590f22f24aa04abeff4ce907fe203b7d54d9b14cfa4f8aeac9c000b |
+| docs/screens/batch-attendance.png | 168672 | 1096b3aa055366602f1e394402e8651c305888d03693c5ab035036731cd165c8 |
+| docs/screens/batch-attendance-success.png | 200327 | 42f6b7ff5bbbb92f2166061c39c158b0dfd845866fd51f34c64753b06007170b |
 
 ## 复现
 
