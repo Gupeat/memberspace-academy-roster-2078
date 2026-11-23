@@ -1,5 +1,6 @@
 import { spawn } from "node:child_process";
 import { existsSync, mkdirSync } from "node:fs";
+import { createServer } from "node:net";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { chromium } from "playwright-core";
@@ -15,6 +16,15 @@ const SCREENS = resolve(EVIDENCE_DIR, "docs", "screens");
 
 function wait(ms) {
   return new Promise((resolveWait) => setTimeout(resolveWait, ms));
+}
+
+async function ensurePortFree(port) {
+  await new Promise((resolveProbe, rejectProbe) => {
+    const probe = createServer();
+    probe.once("error", (error) => rejectProbe(new Error("预览端口 " + port + " 已被占用：" + error.code)));
+    probe.once("listening", () => probe.close(() => resolveProbe()));
+    probe.listen(port, "127.0.0.1");
+  });
 }
 
 async function waitForServer() {
@@ -45,19 +55,28 @@ async function main() {
     throw new Error("dist/index.html 不存在，请先运行 pnpm build");
   }
   if (CAPTURE) mkdirSync(SCREENS, { recursive: true });
+  await ensurePortFree(4173);
 
   const server = spawn(
     process.execPath,
     [resolve(ROOT, "node_modules", "vite", "bin", "vite.js"), "preview", "--host", "127.0.0.1", "--port", "4173", "--strictPort"],
     { cwd: ROOT, stdio: ["ignore", "pipe", "pipe"], env: { ...process.env, BROWSER: "none" } },
   );
+  let serverError = "";
   server.stdout.on("data", (chunk) => process.stdout.write(String(chunk)));
-  server.stderr.on("data", (chunk) => process.stderr.write(String(chunk)));
+  server.stderr.on("data", (chunk) => {
+    const text = String(chunk);
+    process.stderr.write(text);
+    if (/EADDRINUSE|already in use/i.test(text)) serverError = text.trim();
+  });
 
   let browser;
   try {
     await waitForServer();
     await wait(500);
+    if (serverError) {
+      throw new Error("预览服务器启动失败：" + serverError);
+    }
     if (server.exitCode !== null) {
       throw new Error("预览服务器启动失败，退出码 " + server.exitCode + "（常见原因：4173 端口被占用）");
     }
@@ -136,7 +155,13 @@ async function main() {
     }
 
     // AC3: empty note cannot submit; the mock batch endpoint is not called.
+    const r001TimeBefore = await textOf(page, '[data-testid="row-r001"] td:nth-child(8)');
+    const r001HoursBefore = await textOf(page, '[data-testid="row-r001"] td:nth-child(9)');
     const selectable = page.locator('tbody input[type="checkbox"]:not([disabled])');
+    const selectedIds = await selectable.evaluateAll((nodes) =>
+      nodes.slice(0, 2).map((node) => (node.closest("tr")?.getAttribute("data-testid") ?? "").replace("row-", "")),
+    );
+    assertEqual(String(selectedIds.length), "2", "可补录行数");
     await selectable.nth(0).check();
     await selectable.nth(1).check();
     assertEqual(await textOf(page, '[data-testid="selected-count"]'), "已选 2 人", "勾选人数");
@@ -158,6 +183,30 @@ async function main() {
     await page.waitForSelector('[data-testid="batch-submit"]', { state: "hidden" });
     assertEqual(await textOf(page, '[data-testid="mock-batch-count"]'), "1", "有效提交后 mock 批量请求数");
     assertEqual(await textOf(page, '[data-testid="selected-count"]'), "已选 0 人", "提交后勾选人数");
+    assertEqual(await textOf(page, '[data-testid="stat-checked-in"] strong'), "98", "补录后签到数");
+    assertEqual(await textOf(page, '[data-testid="stat-attendance"] strong'), "76.6%", "补录后出勤率");
+    assertEqual(
+      await textOf(page, '[data-testid="row-r001"] td:nth-child(8)'),
+      r001TimeBefore,
+      "已签到 r001 的签到时间保持不变",
+    );
+    assertEqual(
+      await textOf(page, '[data-testid="row-r001"] td:nth-child(9)'),
+      r001HoursBefore,
+      "已签到 r001 的学时保持不变",
+    );
+    for (const id of selectedIds) {
+      assertEqual(
+        String((await textOf(page, '[data-testid="row-' + id + '"] td:nth-child(8)')).includes("—")),
+        "false",
+        "补录行 " + id + " 的签到时间已写入",
+      );
+      assertEqual(
+        String((await textOf(page, '[data-testid="row-' + id + '"] td:nth-child(9)')).includes("2 学时")),
+        "true",
+        "补录行 " + id + " 的学时已写入",
+      );
+    }
     if (CAPTURE) {
       await page.screenshot({ path: resolve(SCREENS, "batch-attendance-success.png") });
     }
@@ -172,7 +221,7 @@ async function main() {
         "AC2 查看后显示完整手机号",
         FAST ? "AC2 30 秒窗口到期后恢复脱敏（假时钟）" : "AC2 查看手机号（点击后完整号码；30 秒恢复由 --fast 与 capture 验证）",
         "AC3 空说明被拒绝且 mock 请求数为 0",
-        "有效补录请求数为 1",
+        "有效补录请求数为 1，签到数 96→98，已签到 r001 时间/学时不变",
       ],
       screenshots: CAPTURE ? ["docs/screens/roster-stats.png", "docs/screens/mobile-no-permission.png", "docs/screens/batch-attendance.png"] : [],
     }, null, 2));

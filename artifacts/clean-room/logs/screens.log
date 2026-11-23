@@ -8,7 +8,7 @@
     "AC2 查看后显示完整手机号",
     "AC2 查看手机号（点击后完整号码；30 秒恢复由 --fast 与 capture 验证）",
     "AC3 空说明被拒绝且 mock 请求数为 0",
-    "有效补录请求数为 1"
+    "有效补录请求数为 1，签到数 96→98，已签到 r001 时间/学时不变"
   ],
   "screenshots": [
     "docs/screens/roster-stats.png",

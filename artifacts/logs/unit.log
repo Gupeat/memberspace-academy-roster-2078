@@ -1,9 +1,10 @@
 RUN  v2.1.8 <repo>
 
- ✓ src/domain/permissions.test.ts (5 tests) 6ms
- ✓ src/domain/stats.test.ts (11 tests) 18ms
+ ✓ src/domain/permissions.test.ts (5 tests) 7ms
+ ✓ src/domain/stats.test.ts (12 tests) 15ms
+ ✓ src/api/mockApi.test.ts (5 tests) 451ms
 
- Test Files  2 passed (2)
-      Tests  16 passed (16)
-   Start at  07:00:50
-   Duration  1.52s (transform 177ms, setup 0ms, collect 248ms, tests 24ms, environment 1ms, prepare 505ms)
+ Test Files  3 passed (3)
+      Tests  22 passed (22)
+   Start at  07:44:31
+   Duration  1.82s (transform 289ms, setup 0ms, collect 361ms, tests 472ms, environment 1ms, prepare 778ms)

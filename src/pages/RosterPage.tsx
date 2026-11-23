@@ -147,14 +147,13 @@ export function RosterPage() {
   const stats = useMemo(() => computeRosterStats(rows), [rows]);
   const filtered = useMemo(() => filterRows(rows, filters), [rows, filters]);
   const selectableFiltered = useMemo(
-    () => filtered.filter((row) => row.status === "confirmed"),
+    () => filtered.filter((row) => row.status === "confirmed" && row.checked_in_at === null),
     [filtered],
   );
   const selectedRows = useMemo(() => rows.filter((row) => selectedIds.has(row.id)), [rows, selectedIds]);
   const selectedCount = selectedRows.length;
   const allVisibleSelected =
     selectableFiltered.length > 0 && selectableFiltered.every((row) => selectedIds.has(row.id));
-  const revealActive = Object.values(revealedUntil).some((until) => until > nowMs);
   const canCorrectNow = session ? canCorrect(role, session.endsAt, nowMs) : false;
   const canRevealNow = canRevealMobile(role);
   const canBatchNow = canBatchAttendance(role);
@@ -165,10 +164,9 @@ export function RosterPage() {
     : 0;
 
   useEffect(() => {
-    if (!revealActive) return;
-    const timer = window.setInterval(() => setNowMs(Date.now()), 500);
+    const timer = window.setInterval(() => setNowMs(Date.now()), 1000);
     return () => window.clearInterval(timer);
-  }, [revealActive]);
+  }, []);
 
   function applyRole(next: Role) {
     setRole(next);
@@ -196,7 +194,7 @@ export function RosterPage() {
   }
 
   function toggleSelected(row: RosterRow) {
-    if (!canBatchNow || row.status !== "confirmed") return;
+    if (!canBatchNow || row.status !== "confirmed" || row.checked_in_at !== null) return;
     setSelectedIds((previous) => {
       const next = new Set(previous);
       if (next.has(row.id)) next.delete(row.id);
@@ -487,7 +485,7 @@ export function RosterPage() {
               清空选择
             </Button>
           </span>
-          <span className="selection-hint">{canBatchNow ? "仅“已通过”行可补录；补录说明必填。" : "只读审计员无补录、更正权限。"}</span>
+          <span className="selection-hint">{canBatchNow ? "仅“已通过”且未签到行可补录；已签到记录不覆盖。" : "只读审计员无补录、更正权限。"}</span>
         </div>
 
         <div className="table-wrap">
@@ -497,11 +495,11 @@ export function RosterPage() {
                 <th className="check-col">
                   <input
                     type="checkbox"
-                    aria-label="选择当前筛选下的全部已通过行"
+                    aria-label="选择当前筛选下的全部已通过未签到行"
                     checked={allVisibleSelected}
                     onChange={toggleSelectAll}
                     disabled={!canBatchNow || selectableFiltered.length === 0}
-                    title={batchReason || "选择当前筛选下的全部已通过行"}
+                    title={batchReason || "选择当前筛选下的全部已通过未签到行"}
                   />
                 </th>
                 <th>姓名</th>
@@ -536,8 +534,16 @@ export function RosterPage() {
                         aria-label={"选择 " + row.name}
                         checked={selectedIds.has(row.id)}
                         onChange={() => toggleSelected(row)}
-                        disabled={!canBatchNow || row.status !== "confirmed"}
-                        title={!canBatchNow ? batchReason : row.status === "confirmed" ? "" : "仅已通过行可补录"}
+                        disabled={!canBatchNow || row.status !== "confirmed" || row.checked_in_at !== null}
+                        title={
+                          !canBatchNow
+                            ? batchReason
+                            : row.status !== "confirmed"
+                              ? "仅已通过行可补录"
+                              : row.checked_in_at !== null
+                                ? "已签到行不覆盖历史记录"
+                                : ""
+                        }
                       />
                     </td>
                     <td>
@@ -638,7 +644,7 @@ export function RosterPage() {
       >
         <div className="dialog-body">
           <p className="dialog-copy">
-            已选 <strong>{selectedCount}</strong> 人；只处理“已通过”的报名行。
+            已选 <strong>{selectedCount}</strong> 人；只处理“已通过”且未签到的报名行。
             <span className="dialog-mock" data-testid="batch-dialog-count">
               mock 批量补录请求：{counts.batch}
             </span>

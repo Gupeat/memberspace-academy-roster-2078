@@ -32,9 +32,11 @@ export function probeWebm(buffer) {
     frameDeltaMs: 0,
     durationMs: 0,
     durationKnown: false,
+    metric: "last-frame-start",
   };
   const frameStarts = [];
-  let clusterTimestampMs = 0;
+  let clusterTimestampTicks = 0;
+  let lastClusterTicks = 0;
 
   function walk(start, end) {
     let offset = start;
@@ -48,18 +50,18 @@ export function probeWebm(buffer) {
         walk(data, childEnd);
       } else if (id.value === 0x1F43B675) {
         result.clusters += 1;
-        clusterTimestampMs = 0;
+        clusterTimestampTicks = 0;
         walk(data, childEnd);
       } else if (id.value === 0xE7) {
-        clusterTimestampMs = buffer.readUIntBE(data, Math.min(size.value, 6));
-        result.lastClusterTimestampMs = clusterTimestampMs;
+        clusterTimestampTicks = buffer.readUIntBE(data, Math.min(size.value, 6));
+        lastClusterTicks = Math.max(lastClusterTicks, clusterTimestampTicks);
       } else if (id.value === 0xA3 || id.value === 0xA1) {
         // SimpleBlock/Block: track vint, int16 cluster-relative timecode, flags, payload.
         const track = vint(buffer, data, false);
         if (data + track.length + 2 <= childEnd) {
           const relativeMs = buffer.readInt16BE(data + track.length);
           result.frames += 1;
-          frameStarts.push(clusterTimestampMs + relativeMs);
+          frameStarts.push(clusterTimestampTicks + relativeMs);
         }
       } else if (id.value === 0xA0) {
         walk(data, childEnd);
@@ -73,11 +75,14 @@ export function probeWebm(buffer) {
   }
 
   walk(0, buffer.length);
+  const scale = result.timecodeScale || 1_000_000;
+  const toMs = (ticks) => Math.round((ticks * scale) / 1_000_000);
   frameStarts.sort((a, b) => a - b);
+  result.lastClusterTimestampMs = toMs(lastClusterTicks);
   if (frameStarts.length > 0) {
-    result.lastFrameStartMs = frameStarts[frameStarts.length - 1];
+    result.lastFrameStartMs = toMs(frameStarts[frameStarts.length - 1]);
     if (frameStarts.length > 1) {
-      result.frameDeltaMs = result.lastFrameStartMs - frameStarts[frameStarts.length - 2];
+      result.frameDeltaMs = result.lastFrameStartMs - toMs(frameStarts[frameStarts.length - 2]);
     }
     result.durationMs = result.lastFrameStartMs;
   }

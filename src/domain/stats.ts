@@ -60,6 +60,9 @@ export function validateBatch(
   if (selectedRows.some((row) => row.status !== "confirmed")) {
     errors.push("待审核或候补名单不能批量补录，请先完成审核");
   }
+  if (selectedRows.some((row) => row.checked_in_at !== null)) {
+    errors.push("已签到行不能批量补录，历史签到时间与学时不会被覆盖");
+  }
   if (input.note.trim().length === 0) errors.push("补录说明必填");
   if (input.note.trim().length > 200) errors.push("补录说明不能超过 200 字");
   if (!Number.isFinite(input.hours) || input.hours < 0 || input.hours > 24) {
@@ -75,7 +78,7 @@ export function applyBatchAttendance(
 ): RosterRow[] {
   const selected = new Set(input.selectedIds);
   return rows.map((row) => {
-    if (!selected.has(row.id) || row.status !== "confirmed") return row;
+    if (!selected.has(row.id) || row.status !== "confirmed" || row.checked_in_at !== null) return row;
     const checked = input.outcome === "checked";
     return {
       ...row,

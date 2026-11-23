@@ -1,5 +1,6 @@
 import { spawn } from "node:child_process";
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
+import { createServer } from "node:net";
 import { dirname, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { chromium } from "playwright-core";
@@ -15,6 +16,15 @@ const displayPath = (path) => relative(ROOT, path).replaceAll("\\", "/");
 
 function wait(ms) {
   return new Promise((resolveWait) => setTimeout(resolveWait, ms));
+}
+
+async function ensurePortFree(port) {
+  await new Promise((resolveProbe, rejectProbe) => {
+    const probe = createServer();
+    probe.once("error", (error) => rejectProbe(new Error("预览端口 " + port + " 已被占用：" + error.code)));
+    probe.once("listening", () => probe.close(() => resolveProbe()));
+    probe.listen(port, "127.0.0.1");
+  });
 }
 
 async function waitForServer() {
@@ -33,17 +43,25 @@ async function waitForServer() {
 async function main() {
   if (!existsSync(resolve(ROOT, "dist", "index.html"))) throw new Error("dist/index.html 不存在，请先运行 pnpm build");
   mkdirSync(SCREENS, { recursive: true });
+  await ensurePortFree(4173);
   const server = spawn(
     process.execPath,
     [resolve(ROOT, "node_modules", "vite", "bin", "vite.js"), "preview", "--host", "127.0.0.1", "--port", "4173", "--strictPort"],
     { cwd: ROOT, stdio: ["ignore", "pipe", "pipe"], env: { ...process.env, BROWSER: "none" } },
   );
+  let serverError = "";
   server.stdout.on("data", (chunk) => process.stdout.write(String(chunk)));
-  server.stderr.on("data", (chunk) => process.stderr.write(String(chunk)));
+  server.stderr.on("data", (chunk) => {
+    const text = String(chunk);
+    process.stderr.write(text);
+    if (/EADDRINUSE|already in use/i.test(text)) serverError = text.trim();
+  });
 
   let browser;
   try {
     await waitForServer();
+    if (serverError) throw new Error("预览服务器启动失败：" + serverError);
+    if (server.exitCode !== null) throw new Error("预览服务器提前退出，退出码 " + server.exitCode);
     browser = await chromium.launch({ executablePath: findBrowser(), headless: true });
     const context = await browser.newContext({ viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 });
     const page = await context.newPage();
@@ -126,6 +144,10 @@ async function main() {
     if (header !== "1a45dfa3") throw new Error("输出不是 WebM 文件：" + header);
     const probe = probeWebm(video);
     if (probe.frames < 1) throw new Error("录屏没有视频帧：" + JSON.stringify(probe));
+    if (probe.metric !== "last-frame-start") throw new Error("录屏时长口径不是末帧起点：" + JSON.stringify(probe));
+    if (probe.durationMs <= probe.lastClusterTimestampMs + 500) {
+      throw new Error("录屏时长退回末簇起点口径：" + JSON.stringify(probe));
+    }
     if (probe.durationMs < 30000) throw new Error("录屏未覆盖 30 秒窗口：" + JSON.stringify(probe));
     console.log(JSON.stringify({
       ok: true,
