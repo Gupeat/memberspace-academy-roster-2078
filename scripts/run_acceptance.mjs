@@ -31,6 +31,7 @@ const STEPS = [
 
 const EVIDENCE_FILES = [
   "roster-stats.png",
+  "mobile-no-permission.png",
   "reveal-mobile-before.png",
   "reveal-mobile-poster.png",
   "reveal-mobile-after.png",
@@ -137,6 +138,7 @@ function main() {
   const videoStep = results.find((item) => item.id === "video");
   lines.push("- 回归命令：node scripts/e2e.mjs --fast（假时钟 fast-forward 31 秒）");
   lines.push("- 结果：" + (e2e?.ok ? "PASS" : "FAIL") + "，exit=" + (e2e?.exitCode ?? "未执行"));
+  lines.push("- 权限断言：切换“只读审计员”后手机号仍为 *******1234，表格内“查看”按钮数为 0；截图 " + SCREEN_PREFIX + "/mobile-no-permission.png。");
   lines.push("- 录屏命令：node scripts/capture-reveal.mjs（真实时间逐秒截帧，MediaRecorder 生成 WebM）");
   lines.push("- 结果：" + (videoStep?.ok ? "PASS" : "FAIL") + "，exit=" + (videoStep?.exitCode ?? "未执行"));
   lines.push("- 证据：" + SCREEN_PREFIX + "/reveal-mobile.webm；reveal-mobile-before.png / reveal-mobile-after.png 为前后帧。");

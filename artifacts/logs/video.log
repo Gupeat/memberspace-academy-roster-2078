@@ -9,16 +9,16 @@ recorded 30s
   "ok": true,
   "file": "docs/screens/reveal-mobile.webm",
   "mimeType": "video/webm;codecs=vp9",
-  "bytes": 261335,
-  "elapsedSeconds": 36,
+  "bytes": 261349,
+  "elapsedSeconds": 35,
   "video": {
-    "bytes": 261335,
+    "bytes": 261349,
     "timecodeScale": 1000000,
     "clusters": 2,
     "frames": 33,
-    "lastTimestampMs": 30147,
+    "lastTimestampMs": 30394,
     "durationKnown": false,
-    "durationMs": 30147
+    "durationMs": 30394
   },
   "finalMobile": "*******1234"
 }

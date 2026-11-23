@@ -1,7 +1,7 @@
 export type RosterStatus = "pending" | "waitlist" | "confirmed";
 export type LearningStatus = "not_started" | "in_progress" | "completed";
 export type RosterSource = "mini" | "workbench" | "campaign";
-export type Role = "supervisor" | "manager";
+export type Role = "supervisor" | "manager" | "auditor";
 export type AttendanceOutcome = "checked" | "leave" | "absent";
 
 export interface RosterRow {
@@ -66,6 +66,12 @@ export interface LearningRecordInput {
   hours: number;
   note: string;
 }
+
+export const ROLE_LABEL: Record<Role, string> = {
+  supervisor: "主管",
+  manager: "会员经理",
+  auditor: "只读审计员",
+};
 
 export const STATUS_LABEL: Record<RosterStatus, string> = {
   pending: "待审核",

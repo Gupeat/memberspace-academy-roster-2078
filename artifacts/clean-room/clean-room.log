@@ -1,0 +1,13 @@
+# 2078 clean-room rerun (v1.0.3)
+- source: repo copied without node_modules, dist, artifacts, .esbuild-tmp
+- install: pnpm install --offline --frozen-lockfile (exit 0)
+- command: node scripts/run_acceptance.mjs
+- check exit=0 0.16s
+- build exit=0 50.39s
+- typecheck exit=0 5.64s
+- unit exit=0 2.90s (15 passed)
+- e2e-fast exit=0 6.72s
+- screens exit=0 11.33s
+- video exit=0 40.31s
+- overall PASS
+- generated_at: 2026-11-23T22:20:16Z

@@ -85,8 +85,21 @@ async function main() {
       await page.screenshot({ path: resolve(SCREENS, "roster-stats.png"), fullPage: true });
     }
 
+    // AC2 permission split: the read-only auditor has no reveal button and stays masked.
+    await page.locator('select[aria-label="演示身份"]').selectOption("auditor");
+    assertEqual(await textOf(page, '[data-testid="mobile-value-r020"]'), "*******1234", "只读审计员手机号仍脱敏");
+    assertEqual(
+      String(await page.locator('tbody button[data-testid^="mobile-reveal-"]').count()),
+      "0",
+      "只读审计员的查看按钮数",
+    );
+    if (CAPTURE) {
+      await page.screenshot({ path: resolve(SCREENS, "mobile-no-permission.png"), fullPage: true });
+    }
+    await page.locator('select[aria-label="演示身份"]').selectOption("manager");
+
     // AC2: reveal shows the full number, then the 30-second window expires and masks again.
-    await page.locator('[data-testid="row-r020"] button.link-button').click();
+    await page.locator('[data-testid="mobile-reveal-r020"]').click();
     await page.waitForFunction(
       () => document.querySelector('[data-testid="mobile-value-r020"]')?.textContent?.includes("13800001234"),
     );
@@ -137,12 +150,13 @@ async function main() {
       mode: FAST ? "fast-clock" : "real-time",
       checks: [
         "AC1 六卡与 128 行一致",
+        "AC2 只读审计员不渲染查看按钮且手机号保持脱敏",
         "AC2 查看后显示完整手机号",
         FAST ? "AC2 30 秒窗口到期后恢复脱敏（假时钟）" : "AC2 查看手机号（点击后完整号码；30 秒恢复由 --fast 与 capture 验证）",
         "AC3 空说明被拒绝且 mock 请求数为 0",
         "有效补录请求数为 1",
       ],
-      screenshots: CAPTURE ? ["docs/screens/roster-stats.png", "docs/screens/batch-attendance.png"] : [],
+      screenshots: CAPTURE ? ["docs/screens/roster-stats.png", "docs/screens/mobile-no-permission.png", "docs/screens/batch-attendance.png"] : [],
     }, null, 2));
     await context.close();
   } finally {
