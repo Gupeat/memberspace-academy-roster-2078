@@ -9,18 +9,19 @@ recorded 30s
   "ok": true,
   "file": "artifacts/clean-room/docs/screens/reveal-mobile.webm",
   "mimeType": "video/webm;codecs=vp9",
-  "bytes": 261472,
-  "elapsedSeconds": 36,
+  "bytes": 289409,
+  "elapsedSeconds": 35,
   "video": {
-    "bytes": 261472,
+    "bytes": 289409,
     "timecodeScale": 1000000,
     "clusters": 2,
     "frames": 33,
-    "lastClusterTimestampMs": 30810,
-    "lastFrameStartMs": 36283,
-    "frameDeltaMs": 1084,
-    "durationMs": 36283,
-    "durationKnown": false
+    "lastClusterTimestampMs": 30448,
+    "lastFrameStartMs": 35905,
+    "frameDeltaMs": 1091,
+    "durationMs": 35905,
+    "durationKnown": false,
+    "metric": "last-frame-start"
   },
   "finalMobile": "*******1234"
 }

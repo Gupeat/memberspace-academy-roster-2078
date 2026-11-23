@@ -19,6 +19,19 @@ const SCREEN_PREFIX = display(SCREENS);
 mkdirSync(LOGS, { recursive: true });
 mkdirSync(SCREENS, { recursive: true });
 
+const runStartedAt = Date.now();
+const runStartedIso = new Date(runStartedAt).toISOString().slice(0, 19) + "Z";
+writeFileSync(
+  resolve(OUTPUT_ROOT, "acceptance.json"),
+  JSON.stringify({ generatedAt: runStartedIso, passed: false, running: true, steps: [], evidence: [] }, null, 2) + "\n",
+  "utf8",
+);
+writeFileSync(
+  resolve(OUTPUT_ROOT, "ACCEPTANCE.md"),
+  "# 验收记录 · 课期报名名单与出勤补录页\n\n- 状态：RUNNING（开始时预写，防止硬崩后保留旧 PASS）\n- 开始时间（UTC）：" + runStartedIso + "\n",
+  "utf8",
+);
+
 const STEPS = [
   { id: "check", title: "独立对账 mock 数据（六卡六值 + 分项闭合）", command: ["node", "scripts/check-roster.mjs"] },
   { id: "build", title: "生产构建", command: ["node", "scripts/build.mjs"] },
@@ -80,12 +93,26 @@ function main() {
     results.push({ ...step, ...result });
     if (!result.ok) break;
   }
-  const passed = results.length === STEPS.length && results.every((item) => item.ok);
+  let passed = results.length === STEPS.length && results.every((item) => item.ok);
 
+  const missingEvidence = EVIDENCE_FILES.filter((name) => !existsSync(resolve(SCREENS, name)));
   const evidence = EVIDENCE_FILES.filter((name) => existsSync(resolve(SCREENS, name))).map((name) => {
     const full = resolve(SCREENS, name);
-    return { path: SCREEN_PREFIX + "/" + name, bytes: statSync(full).size, sha256: sha256(full) };
+    const stat = statSync(full);
+    return {
+      path: SCREEN_PREFIX + "/" + name,
+      bytes: stat.size,
+      sha256: sha256(full),
+      generatedAt: new Date(stat.mtimeMs).toISOString().slice(0, 19) + "Z",
+      stale: stat.mtimeMs < runStartedAt,
+    };
   });
+  const staleEvidence = evidence.filter((item) => item.stale).map((item) => item.path);
+  const evidenceIssues = [
+    ...missingEvidence.map((name) => "缺少证据 " + SCREEN_PREFIX + "/" + name),
+    ...staleEvidence.map((path) => "证据早于本次验收开始：" + path),
+  ];
+  if (evidenceIssues.length > 0) passed = false;
 
   let video = null;
   try {
@@ -97,7 +124,10 @@ function main() {
   const generatedAt = new Date().toISOString().slice(0, 19) + "Z";
   const report = {
     generatedAt,
+    runStartedAt: runStartedIso,
     passed,
+    evidenceIssues,
+    missingEvidence,
     evidenceDir: EVIDENCE_DIR ? display(EVIDENCE_DIR) : ".",
     node: process.version,
     platform: process.platform + " " + process.arch,
@@ -113,7 +143,11 @@ function main() {
   lines.push("- 生成时间（UTC）：" + generatedAt);
   lines.push("- 运行环境：Node " + process.version + " / " + process.platform + " " + process.arch);
   lines.push("- 证据目录：" + (EVIDENCE_DIR ? display(EVIDENCE_DIR) : "仓库根（docs/screens 与 artifacts）"));
+  lines.push("- 开始时间（UTC）：" + runStartedIso);
   lines.push("- 总体结果：" + (passed ? "PASS" : "FAIL"));
+  if (evidenceIssues.length > 0) {
+    lines.push("- 证据问题：" + evidenceIssues.join("；"));
+  }
   lines.push("- 日志与输出中的本机仓库路径已替换为 <repo>；端口仅为本机预览 127.0.0.1:4173。");
   lines.push("");
   lines.push("## 逐条验收");
@@ -154,7 +188,7 @@ function main() {
   lines.push("### AC3 批量补录未填说明时无法提交（截图）");
   lines.push("");
   lines.push("- 回归命令：node scripts/e2e.mjs --fast");
-  lines.push("- 断言：勾选 2 个“已通过”行 → 打开批量补录 → 说明留空 → 出现 batch-error；mock-batch-count 仍为 0；弹窗内 batch-dialog-count 仍为 0；填写说明后提交成功，批量请求数变为 1、已选变为 0。");
+  lines.push("- 断言：勾选 2 个“已通过”且未签到行 → 打开批量补录 → 说明留空 → 出现 batch-error；mock-batch-count 仍为 0；弹窗内 batch-dialog-count 仍为 0；填写说明后提交成功，批量请求数变为 1、已选变为 0、签到数 96→98、出勤率 76.6%，已签到 r001 的签到时间与学时不变。");
   lines.push("- 截图：" + SCREEN_PREFIX + "/batch-attendance.png（空说明红字、计数 0）、" + SCREEN_PREFIX + "/batch-attendance-success.png（提交成功）。");
   lines.push("");
   lines.push("## 全部步骤");

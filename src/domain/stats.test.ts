@@ -122,6 +122,26 @@ describe("batch attendance", () => {
     expect(computeRosterStats(next).attendanceRate).toBe(76.6);
   });
 
+  it("rejects already checked-in rows and never overwrites their history", () => {
+    const selected = checkedInConfirmed(2);
+    const target = rows.find((row) => row.id === selected[0])!;
+    const validation = validateBatch(
+      { selectedIds: selected, outcome: "leave", hours: 0, note: "覆盖历史" },
+      rows,
+    );
+    expect(validation.ok).toBe(false);
+    expect(validation.errors.join("；")).toContain("已签到");
+    const next = applyBatchAttendance(
+      rows,
+      { selectedIds: selected, outcome: "leave", hours: 0, note: "覆盖历史" },
+      "2026-11-22T10:00:00+08:00",
+    );
+    const unchanged = next.find((row) => row.id === target.id)!;
+    expect(unchanged.checked_in_at).toBe(target.checked_in_at);
+    expect(unchanged.learning_hours).toBe(target.learning_hours);
+    expect(unchanged.benefit_deducted).toBe(target.benefit_deducted);
+  });
+
   it("does not mutate pending or waitlist rows", () => {
     const pending = rows.find((row) => row.status === "pending");
     expect(pending).toBeDefined();

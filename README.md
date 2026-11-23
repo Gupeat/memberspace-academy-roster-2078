@@ -31,8 +31,9 @@
         pages/RosterPage.tsx         # 页面编排：六卡、10 列、筛选、弹窗、抽屉、权限
         pages/ActivitiesPage.tsx     # 待审核“审核”跳转的活动模块占位
         styles.css                   # 运营后台视觉
-        domain/stats.test.ts         # 11 例领域测试
+        domain/stats.test.ts         # 12 例领域测试
         domain/permissions.test.ts   # 30 天边界 + 只读审计员测试
+        api/mockApi.test.ts          # 5 例 mock 权限与已签到保护测试
       scripts/
         generate_roster.mjs          # 确定性生成 mock/roster.json（seed=2078）
         check-roster.mjs             # 独立重算六值并对账（AC1）
@@ -65,7 +66,7 @@
     pnpm capture     # 真实 30 秒录屏（AC2）
     pnpm verify      # 一键跑全部步骤，写 artifacts/ACCEPTANCE.md
 
-当前基线：2 个测试文件、16 例领域测试；<code>pnpm check</code> 六卡对账 PASS；<code>pnpm e2e</code> 三条 AC 全 PASS；<code>pnpm verify</code> 总体 PASS，生成 <code>artifacts/ACCEPTANCE.md</code>、<code>artifacts/acceptance.json</code> 与 <code>artifacts/logs/</code>。
+当前基线：3 个测试文件、22 例领域测试；<code>pnpm check</code> 六卡对账 PASS；<code>pnpm e2e</code> 三条 AC 全 PASS；<code>pnpm verify</code> 总体 PASS，生成 <code>artifacts/ACCEPTANCE.md</code>、<code>artifacts/acceptance.json</code> 与 <code>artifacts/logs/</code>。
 
 干净副本复跑：把源码复制到空目录（排除 <code>node_modules</code>、<code>dist</code>、<code>artifacts</code>、<code>.esbuild-tmp</code>），执行 <code>pnpm install --offline --frozen-lockfile</code> 与 <code>node scripts/run_acceptance.mjs</code>，同一套步骤 PASS；证据在 <code>artifacts/clean-room/</code>。<code>--offline</code> 依赖本机 pnpm store，全新机器可去掉该参数让 pnpm 联网解析。
 
@@ -75,7 +76,7 @@
 |---|---|---|
 | AC1 | 统计卡数字与 mock 数据手算结果一致（截图） | 报名 128、候补 12、待审核 7、签到 96、出勤率 75.0%、非会员 23；96÷128=75.0%，96+13+12+7=128；<code>scripts/check-roster.mjs</code> 独立重算；手算底稿 <code>docs/ROSTER-HANDCALC.md</code>；截图 <code>docs/screens/roster-stats.png</code>（1440×6664 全页） |
 | AC2 | 点击查看手机号，30 秒后恢复脱敏（录屏） | r020 默认 <code>*******1234</code>；有权限的经理/主管点击“查看”显示 <code>13800001234</code>，按钮倒计时 30→1，30 秒后恢复；只读审计员不渲染“查看”按钮且号码始终脱敏（<code>docs/screens/mobile-no-permission.png</code>）；<code>docs/screens/reveal-mobile.webm</code> 为真实时间录屏（VP9），前后帧 <code>reveal-mobile-before.png</code> / <code>reveal-mobile-after.png</code>；<code>pnpm e2e</code> 用假时钟 fast-forward 31 秒做回归 |
-| AC3 | 批量补录未填说明时无法提交（截图） | 勾选 2 个“已通过”行 → 批量补录 → 说明留空 → 出现红字，<code>mock-batch-count</code> 保持 0，弹窗计数保持 0；填写说明后成功，批量请求数变为 1；截图 <code>docs/screens/batch-attendance.png</code>（空说明）与 <code>batch-attendance-success.png</code>（成功） |
+| AC3 | 批量补录未填说明时无法提交（截图） | 勾选 2 个“已通过且未签到”行 → 批量补录 → 说明留空 → 出现红字，<code>mock-batch-count</code> 保持 0，弹窗计数保持 0；填写说明后成功，批量请求数变为 1、签到数 96→98，已签到行的历史时间与学时不变；截图 <code>docs/screens/batch-attendance.png</code>（空说明）与 <code>batch-attendance-success.png</code>（成功） |
 
 ## 6. 页面与业务规则
 
@@ -89,7 +90,7 @@
 
 ### 6.3 手机号查看
 
-默认只显示 <code>*******</code> + 后 4 位；会员经理和主管可点“查看”，调用 <code>revealMobile</code> 返回 30 秒有效期；页面按 500ms 刷新剩余秒数，到期自动恢复脱敏。只读审计员（<code>auditor</code>）没有查看权限，该身份下不渲染“查看”按钮，手机号始终脱敏。切换身份会清除已查看状态。角色切换只用于演示权限，不是真实 IAM。
+默认只显示 <code>*******</code> + 后 4 位；会员经理和主管可点“查看”，调用 <code>revealMobile</code> 返回 30 秒有效期；页面每秒刷新剩余秒数，到期自动恢复脱敏。只读审计员（<code>auditor</code>）没有查看权限，该身份下不渲染“查看”按钮，手机号始终脱敏。切换身份会清除已查看状态。角色切换只用于演示权限，不是真实 IAM。
 
 ### 6.4 筛选
 
@@ -97,7 +98,7 @@
 
 ### 6.5 批量补录出勤
 
-只处理“已通过”行；可多选；补录结果支持“已签到/请假/未到场”；学时 0–24；说明必填、最多 200 字。只读审计员不渲染可用的行复选框、批量按钮禁用，<code>submitBatch</code> 与 mock 的 <code>batchAttendance</code> 都会再次拒绝；前端校验通过后才调用 mock；空说明时按钮不提交、请求计数不增加。已签到会写入签到时间并置“已扣权益”；请假/未到场清空签到时间且不扣权益。
+只处理“已通过且未签到”行；可多选；已签到行不可选，历史签到时间与学时不会被覆盖；补录结果支持“已签到/请假/未到场”；学时 0–24；说明必填、最多 200 字。只读审计员不渲染可用的行复选框、批量按钮禁用，<code>submitBatch</code> 与 mock 的 <code>batchAttendance</code> 都会再次拒绝；已签到行会被 <code>validateBatch</code> 拒绝，<code>applyBatchAttendance</code> 不覆盖其历史。前端校验通过后才调用 mock；空说明时按钮不提交、请求计数不增加。补录“已签到”写入签到时间并置“已扣权益”；请假/未到场不扣权益。
 
 ### 6.6 单行学习记录更正
 
@@ -105,7 +106,7 @@
 
 ### 6.7 30 天权限
 
-课期结束时间 <code>2026-10-18T17:30:00+08:00</code>。结束超过 30 天（即晚于 <code>2026-11-17T17:30:00+08:00</code>）后，会员经理的“更正”按钮禁用，页面顶部显示“课期结束超过 30 天，需主管权限”；主管不受限。演示页默认以经理身份进入，并提供“切换为主管（演示）”。边界规则为 <code>now &lt;= endsAt + 30 天</code> 仍可更正，超过 1ms 即禁用。只读审计员在任何时间都无更正、补录和手机号查看权限。
+课期结束时间 <code>2026-10-18T17:30:00+08:00</code>。结束超过 30 天（即晚于 <code>2026-11-17T17:30:00+08:00</code>）后，会员经理的单行“更正”按钮禁用，页面顶部显示“课期结束超过 30 天，需主管权限”；主管不受限。批量补录按角色控制（经理/主管可补录、审计员不可），任务原文的 30 天限制只针对“更正”按钮。演示页默认以经理身份进入，并提供“切换为主管（演示）”。边界规则为 <code>now &lt;= endsAt + 30 天</code> 仍可更正，超过 1ms 即禁用。只读审计员在任何时间都无更正、补录和手机号查看权限。
 
 ### 6.8 待审核行
 
@@ -130,7 +131,7 @@
 ## 8. 截图 / 录屏
 
 - 截图：Playwright + Edge headless，e2e 视口 1440×1100；<code>roster-stats.png</code> 为全页 1440×6664；<code>mobile-no-permission.png</code> 为只读审计员身份下的全页截图（无“查看”按钮）。
-- 录屏：<code>scripts/capture-reveal.mjs</code> 在页面注入 detached canvas，逐秒用 Playwright 截帧并 drawImage，<code>canvas.captureStream(1)</code> + MediaRecorder 生成 WebM；不依赖 ffmpeg、不修改 DOM 可见结构。录制步骤约 40 秒（含启动与收尾），末帧时间戳约 36.2 秒/33 帧，覆盖完整 30 秒倒计时与恢复脱敏；WebM 不写 Duration 元素，部分播放器会显示 Infinity，完整播放不受影响。
+- 录屏：<code>scripts/capture-reveal.mjs</code> 在页面注入 detached canvas，逐秒用 Playwright 截帧并 drawImage，<code>canvas.captureStream(1)</code> + MediaRecorder 生成 WebM；不依赖 ffmpeg、不修改 DOM 可见结构。录制步骤约 40 秒（含启动与收尾），末帧时间戳约 35.8 秒/33 帧，覆盖完整 30 秒倒计时与恢复脱敏；WebM 不写 Duration 元素，部分播放器会显示 Infinity，完整播放不受影响。
 - 录屏不是 MP4：本机无 ffmpeg，WebM 是浏览器原生可播放格式；README 与验收记录均如实写明，不把 GIF/WebM 改名成 MP4。
 
 ## 9. 已知限制
@@ -140,7 +141,7 @@
 - 手机号、姓名、企业、课期均为虚构；手机号仅用于演示脱敏，不指向真实个人。
 - 仅桌面工作台布局（1280–1440 宽优先）；未做移动端、暗色主题、多语言。
 - 录屏需要本机 Edge/Chrome/Chromium；脚本按 <code>EDGE_PATH</code>/<code>CHROME_PATH</code>、PATH 与系统安装目录解析，不写死绝对路径。
-- 单测覆盖领域规则与 30 天边界；像素级视觉回归不在范围内，视觉证据为人工复核截图。
+- 单测覆盖领域规则、30 天边界、批量补录的已签到保护与 mock 权限；像素级视觉回归不在范围内，视觉证据为人工复核截图。
 
 ## 10. 安全与数据
 
@@ -152,5 +153,5 @@
 
 - <code>pnpm install</code> 报 esbuild 构建被忽略：确认 <code>pnpm-workspace.yaml</code> 中 <code>allowBuilds: { esbuild: true }</code> 存在，且 <code>node</code> 在 PATH 上（esbuild 的 postinstall 会调用 <code>node</code>），再执行 <code>pnpm rebuild esbuild</code>。
 - e2e/录屏报找不到浏览器：设置 <code>$env:EDGE_PATH</code> 或 <code>$env:CHROME_PATH</code>，或安装 Chrome/Chromium。
-- 端口 4173 被占用：先结束旧 <code>vite preview</code> 进程；脚本使用 <code>--strictPort</code>，不会静默换端口。
+- 端口 4173 被占用：e2e/录屏会在启动前探测端口，占用时直接失败并提示 EADDRINUSE；不会误用旧服务。
 - 录屏文件很小或打不开：确认浏览器支持 <code>MediaRecorder</code> 的 WebM；脚本会检查文件头 <code>1a45dfa3</code> 并在失败时退出 1。
